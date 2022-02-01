@@ -13,7 +13,7 @@
     "@oclif/command": "^1",
     "@oclif/config": "^1",
     "@oclif/plugin-help": "^3",
-    "axios": "^0.21.4",
+    "axios": "^0.24.0",
     "fs-extra": "^10.0.0",
     "tslib": "^1"
   },

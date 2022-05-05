@@ -6,7 +6,7 @@ import { Requests } from '../http/http';
 export async function recoverCredentials(command: Command) {
   const apiConfig = await fs.readJSON(path.join(command.config.configDir, 'config.json'));
   const userConfig = await fs.readJSON(path.join(command.config.cacheDir, 'token.json'));
-  let requestClient = new Requests(apiConfig.url, apiConfig.masterKey);
+  const requestClient = new Requests(apiConfig.url, apiConfig.masterKey);
   if (userConfig.token) {
     requestClient.setToken(userConfig.token);
   }

@@ -54,14 +54,10 @@ export class Requests {
       });
   }
 
-  getCmsSchemasRequest(skip: number, limit: number) {
+  getSchemasRequest(skip: number, limit: number) {
     return axios
-      .get(`${this.URL}/admin/cms/schemas`, { params: { skip, limit } })
+      .get(`${this.URL}/admin/database/schemas`, { params: { skip, limit } })
       .then((r) => r.data);
-  }
-
-  schemasFromOtherModules() {
-    return axios.get(`${this.URL}/admin/cms/schemasFromOtherModules`).then((r) => r.data);
   }
 
   getAdminModulesRequest() {

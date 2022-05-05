@@ -18,7 +18,6 @@ interface ConduitModelField {
   unique?: boolean;
   select?: boolean;
   required?: boolean;
-  systemRequired?: boolean;
 }
 
 interface ConduitModel {

@@ -4,40 +4,46 @@ conduit-cli
 The CLI to help you when developing conduit.
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/conduit-cli.svg)](https://npmjs.org/package/conduit-cli)
-[![Downloads/week](https://img.shields.io/npm/dw/conduit-cli.svg)](https://npmjs.org/package/conduit-cli)
-[![License](https://img.shields.io/npm/l/conduit-cli.svg)](https://github.com/quintessential-sft/conduit/blob/master/package.json)
+
+[//]: # ([![Version]&#40;https://img.shields.io/npm/v/conduit-cli.svg&#41;]&#40;https://npmjs.org/package/conduit-cli&#41;)
+
+[//]: # ([![Downloads/week]&#40;https://img.shields.io/npm/dw/conduit-cli.svg&#41;]&#40;https://npmjs.org/package/conduit-cli&#41;)
+
+[//]: # ([![License]&#40;https://img.shields.io/npm/l/conduit-cli.svg&#41;]&#40;https://github.com/ConduitPlatform/CLI/blob/master/package.json&#41;)
 
 <!-- toc -->
+* [Limitations:](#limitations)
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
+
 # Limitations:
 * Currently, only creates schemas and only for TypeScript
+
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @quintessential-sft/conduit-cli
+$ npm install -g @conduitplatform/conduit-cli
 $ conduit COMMAND
 running command...
 $ conduit (-v|--version|version)
-@quintessential-sft/conduit-cli/0.0.2 darwin-x64 node-v14.16.0
+@conduitplatform/conduit-cli/0.0.2 linux-x64 node-v14.19.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
 ...
 ```
 <!-- usagestop -->
+
 # Commands
 <!-- commands -->
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
-* [`conduit hello [FILE]`](#conduit-hello-file)
 * [`conduit help [COMMAND]`](#conduit-help-command)
 * [`conduit init`](#conduit-init)
 
 ## `conduit generateSchema [PATH]`
 
-Generate Schema TS files for CMS schemas
+Generate Schema TS files for registered Conduit schemas
 
 ```
 USAGE
@@ -48,10 +54,11 @@ OPTIONS
 
 EXAMPLE
   $ conduit generate-schema
-  You have logged in!
+  ...
+  Generating schemas
 ```
 
-_See code: [src/commands/generateSchema.ts](https://github.com/Quintessential-SFT/conduit/blob/v0.0.2/src/commands/generateSchema.ts)_
+_See code: [src/commands/generateSchema.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/generateSchema.ts)_
 
 ## `conduit help [COMMAND]`
 
@@ -68,7 +75,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.3.1/src/commands/help.ts)_
 
 ## `conduit init`
 
@@ -84,10 +91,12 @@ OPTIONS
 
 EXAMPLE
   $ conduit init
-  You have logged in!
+  ...
+  Attempting login
+  Login Successful!
 ```
 
-_See code: [src/commands/init.ts](https://github.com/Quintessential-SFT/conduit/blob/v0.0.2/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/init.ts)_
 <!-- commandsstop -->
 
 #Roadmap

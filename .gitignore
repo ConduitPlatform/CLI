@@ -1,2 +1,7 @@
 # Project exclude paths
-/node_modules/
+**/*.log
+/node_modules
+/dist
+/.idea
+/.vscode
+/oclif.manifest.json

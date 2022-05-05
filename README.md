@@ -43,7 +43,7 @@ USAGE
 
 ## `conduit generateSchema [PATH]`
 
-Generate Schema TS files for CMS schemas
+Generate Schema TS files for registered Conduit schemas
 
 ```
 USAGE

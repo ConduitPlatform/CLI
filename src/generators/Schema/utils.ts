@@ -18,12 +18,12 @@ export function parseFieldsToTs(fields: any) {
   let imports = '';
   for (const field in fields) {
     if (typeof fields[field] === 'string') {
-      typings += `${field}: ${extractType(fields[field])};\n`;
+      typings += `  ${field}: ${extractType(fields[field])};\n`;
     } else if (fields[field].enum) {
       const types = (fields[field].enum as string[])
         .map((val) => "'" + val + "'")
         .join(' | ');
-      typings += `${field}${fields[field].required ? '!' : ''}: ${types};\n`;
+      typings += `  ${field}${fields[field].required ? '!' : ''}: ${types};\n`;
     } else if (fields[field].type === 'Relation') {
       const name =
         fields[field].model.charAt(0).toUpperCase() + fields[field].model.slice(1);
@@ -31,9 +31,9 @@ export function parseFieldsToTs(fields: any) {
       if (imports.indexOf(importText) === -1) {
         imports += importText;
       }
-      typings += `${field}${fields[field].required ? '!' : ''}: ${name};\n`;
+      typings += `  ${field}${fields[field].required ? '!' : ''}: ${name};\n`;
     } else if (typeof fields[field].type === 'string') {
-      typings += `${field}${fields[field].required ? '!' : ''}: ${extractType(
+      typings += `  ${field}${fields[field].required ? '!' : ''}: ${extractType(
         fields[field].type
       )};\n`;
     } else if (
@@ -56,12 +56,12 @@ export function parseFieldsToTs(fields: any) {
             imports += imported + '\n';
           }
         });
-        typings += `${field}${fields[field].required ? '!' : ''}: {${
+        typings += `  ${field}${fields[field].required ? '!' : ''}: {${
           fieldParse.typings
         }}[];\n`;
       }
     } else if (Array.isArray(fields[field].type)) {
-      typings += `${field}${fields[field].required ? '!' : ''}: ${extractType(
+      typings += `  ${field}${fields[field].required ? '!' : ''}: ${extractType(
         fields[field].type[0]
       )}[];\n`;
     } else if (typeof fields[field].type === 'object') {
@@ -71,7 +71,7 @@ export function parseFieldsToTs(fields: any) {
           imports += imported + '\n';
         }
       });
-      typings += `${field}${fields[field].required ? '!' : ''}: {${
+      typings += `  ${field}${fields[field].required ? '!' : ''}: {${
         fieldParse.typings
       }};\n`;
     }

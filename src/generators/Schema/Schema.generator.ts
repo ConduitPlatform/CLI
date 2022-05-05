@@ -13,7 +13,7 @@ IMPORTS_PLACEHOLDER
 export class MODEL_CLASS_NAME extends ConduitActiveSchema<MODEL_CLASS_NAME> {
   private static _instance: MODEL_CLASS_NAME;
   
-  FIELDS_PLACEHOLDER
+FIELDS_PLACEHOLDER
 
   constructor(database: DatabaseProvider) {
     super(database, MODEL_CLASS_NAME.name);

@@ -8,7 +8,9 @@ export default class Init extends Command {
 
   static examples = [
     `$ conduit init
-You have logged in!
+...
+Attempting login
+Login Successful!
 `,
   ];
 
@@ -18,22 +20,22 @@ You have logged in!
   };
 
   async run() {
-    const { args, flags } = this.parse(Init);
+    const { flags } = this.parse(Init);
     let url, masterKey;
     if (flags.relogin) {
-      let obj = await recoverUrl(this);
+      const obj = await recoverUrl(this);
       url = obj.url;
       masterKey = obj.masterKey;
     } else {
-      url = await cli.prompt('Add the API url of your conduit installation');
+      url = await cli.prompt('Specify the API url of your Conduit installation');
       masterKey = await cli.prompt('Add the master key of your conduit installation');
     }
-    const adminUsername = await cli.prompt('Add the admin username');
-    const adminPassword = await cli.prompt('Add the admin password');
-    let requestInstance = new Requests(url, masterKey);
+    const adminUsername = await cli.prompt('Specify the admin username');
+    const adminPassword = await cli.prompt('Specify the admin password');
+    const requestInstance = new Requests(url, masterKey);
     cli.action.start('Attempting login');
     try {
-      let usr = await requestInstance.loginRequest(adminUsername, adminPassword);
+      const usr = await requestInstance.loginRequest(adminUsername, adminPassword);
       await storeCredentials(this, { url, masterKey }, usr!);
       cli.action.stop('Login Successful!');
     } catch (e) {

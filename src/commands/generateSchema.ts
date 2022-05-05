@@ -9,7 +9,8 @@ export default class GenerateSchema extends Command {
 
   static examples = [
     `$ conduit generate-schema
-You have logged in!
+...
+Generating schemas
 `,
   ];
 
@@ -33,11 +34,11 @@ You have logged in!
     if (!args.path) {
       return this.log('Path not provided!');
     }
-    let schemas: {
+    const schemas: {
       results: any[];
       documentsCount: number;
     } = await requestClient.getCmsSchemasRequest(0, 5000);
-    let supplementary = await requestClient.schemasFromOtherModules();
+    const supplementary = await requestClient.schemasFromOtherModules();
     schemas.results = schemas.results.concat(...supplementary.results);
     this.log('Found schemas: ', schemas.results.length);
     cli.action.start('Generating schemas');

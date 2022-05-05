@@ -16,18 +16,18 @@ function extractType(field: any) {
 export function parseFieldsToTs(fields: any) {
   let typings = '';
   let imports = '';
-  for (let field in fields) {
+  for (const field in fields) {
     if (typeof fields[field] === 'string') {
       typings += `${field}: ${extractType(fields[field])};\n`;
     } else if (fields[field].enum) {
-      let types = (fields[field].enum as string[])
+      const types = (fields[field].enum as string[])
         .map((val) => "'" + val + "'")
         .join(' | ');
       typings += `${field}${fields[field].required ? '!' : ''}: ${types};\n`;
     } else if (fields[field].type === 'Relation') {
-      let name =
+      const name =
         fields[field].model.charAt(0).toUpperCase() + fields[field].model.slice(1);
-      let importText = `import {${name}} from \'./${name}.schema\'\n`;
+      const importText = `import {${name}} from \'./${name}.schema\'\n`;
       if (imports.indexOf(importText) === -1) {
         imports += importText;
       }
@@ -41,7 +41,7 @@ export function parseFieldsToTs(fields: any) {
       typeof fields[field].type[0] === 'object'
     ) {
       if (fields[field].type[0].type) {
-        let fieldParse = parseFieldsToTs({ [field]: fields[field].type[0] });
+        const fieldParse = parseFieldsToTs({ [field]: fields[field].type[0] });
         fieldParse.typings = fieldParse.typings.replace(';', '[];');
         fieldParse.imports.split('\n').forEach((imported) => {
           if (imports.indexOf(imported) === -1) {
@@ -50,7 +50,7 @@ export function parseFieldsToTs(fields: any) {
         });
         typings += fieldParse.typings;
       } else {
-        let fieldParse = parseFieldsToTs(fields[field].type[0]);
+        const fieldParse = parseFieldsToTs(fields[field].type[0]);
         fieldParse.imports.split('\n').forEach((imported) => {
           if (imports.indexOf(imported) === -1) {
             imports += imported + '\n';
@@ -65,7 +65,7 @@ export function parseFieldsToTs(fields: any) {
         fields[field].type[0]
       )}[];\n`;
     } else if (typeof fields[field].type === 'object') {
-      let fieldParse = parseFieldsToTs(fields[field].type);
+      const fieldParse = parseFieldsToTs(fields[field].type);
       fieldParse.imports.split('\n').forEach((imported) => {
         if (imports.indexOf(imported) === -1) {
           imports += imported + '\n';

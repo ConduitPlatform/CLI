@@ -6,7 +6,7 @@
   "bin": {
     "conduit": "./bin/run"
   },
-  "bugs": "https://github.com/conduitplatform/ConduitCLI/issues",
+  "bugs": "https://github.com/ConduitPlatform/CLI/issues",
   "dependencies": {
     "@grpc/grpc-js": "^1.3.4",
     "@grpc/proto-loader": "^0.6.9",
@@ -34,14 +34,14 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/ConduitPlatform/ConduitCLI",
+  "homepage": "https://github.com/ConduitPlatform/CLI",
   "keywords": [
     "oclif"
   ],
   "license": "MIT",
   "main": "dist/index.js",
   "oclif": {
-    "commands": "./dist/commands",
+    "commands": "./src/commands",
     "bin": "conduit",
     "plugins": [
       "@oclif/plugin-help"
@@ -52,7 +52,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://git@github.com/ConduitPlatform/ConduitCLI.git"
+    "url": "ssh://git@github.com/ConduitPlatform/CLI.git"
   },
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",

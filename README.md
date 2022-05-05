@@ -27,7 +27,7 @@ $ npm install -g @conduitplatform/conduit-cli
 $ conduit COMMAND
 running command...
 $ conduit (-v|--version|version)
-@conduitplatform/conduit-cli/0.0.2 linux-x64 node-v14.19.0
+@conduitplatform/conduit-cli/0.0.2 linux-x64 node-v16.15.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -37,9 +37,57 @@ USAGE
 
 # Commands
 <!-- commands -->
+* [`conduit demo:cleanup`](#conduit-democleanup)
+* [`conduit demo:setup`](#conduit-demosetup)
+* [`conduit demo:start`](#conduit-demostart)
+* [`conduit demo:stop`](#conduit-demostop)
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
 * [`conduit help [COMMAND]`](#conduit-help-command)
 * [`conduit init`](#conduit-init)
+
+## `conduit demo:cleanup`
+
+Removes your local Conduit demo deployment
+
+```
+USAGE
+  $ conduit demo:cleanup
+```
+
+_See code: [src/commands/demo/cleanup.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/cleanup.ts)_
+
+## `conduit demo:setup`
+
+Bootstraps a local Conduit demo deployment with minimal configuration
+
+```
+USAGE
+  $ conduit demo:setup
+```
+
+_See code: [src/commands/demo/setup.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/setup.ts)_
+
+## `conduit demo:start`
+
+Spins up your local Conduit demo deployment
+
+```
+USAGE
+  $ conduit demo:start
+```
+
+_See code: [src/commands/demo/start.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/start.ts)_
+
+## `conduit demo:stop`
+
+Terminates your local Conduit demo deployment
+
+```
+USAGE
+  $ conduit demo:stop
+```
+
+_See code: [src/commands/demo/stop.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/stop.ts)_
 
 ## `conduit generateSchema [PATH]`
 
@@ -96,7 +144,7 @@ EXAMPLE
   Login Successful!
 ```
 
-_See code: [src/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/init.ts)_
 <!-- commandsstop -->
 
 #Roadmap

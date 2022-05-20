@@ -1,7 +1,4 @@
-import {Image, Package} from './types';
-
-export const MIN_MAJOR_CONDUIT_VERSION = 'v0.12';
-export const MAX_MAJOR_CONDUIT_VERSION = 'v0.12';
+import { Image, Package } from './types';
 
 export const REDIS_VERSION = 'latest';
 export const MONGO_VERSION = 'latest';

@@ -1,6 +1,14 @@
 import cli from 'cli-ux';
 
-export async function booleanPrompt(message: string, defaultValue?: 'yes' | 'no') {
+export async function booleanPrompt(
+  message: string,
+  defaultValue?: 'yes' | 'no',
+  silent?: boolean,
+) {
+  if (silent) {
+    if (!defaultValue) throw new Error('Cannot set silent to true without a default value');
+    return defaultValue === 'yes';
+  }
   let res: 'yes' | 'y' | 'no' | 'n' | '' = '';
   while (!['yes', 'y', 'no', 'n'].includes(res)) {
     res = (await cli.prompt(`${message} (yes/no)`, { ...(defaultValue && { default: defaultValue }) })).toLowerCase();
@@ -13,7 +21,12 @@ export async function promptWithOptions(
   choices: string[],
   defaultValue?: string,
   capsSensitive?: false,
+  silent?: boolean,
 ) {
+  if (silent) {
+    if (!defaultValue) throw new Error('Cannot set silent to true without a default value');
+    return defaultValue === 'yes';
+  }
   if (defaultValue && !choices.includes(defaultValue)) {
     cli.error(
       `defaultValue: ${defaultValue} is not contained in choices array: ${choices}`,

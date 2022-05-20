@@ -1,46 +1,48 @@
-import { ConduitPackageConfiguration, Package } from '../../docker/types';
-import { formatEnv, formatPorts } from '../../docker/utils';
+import { Package, PackageConfiguration } from '../../demo/types';
+import { retrieveDemoConfig, getNetworkName } from '../../demo/utils';
 import { Docker } from '../../docker/Docker';
 import { Command } from '@oclif/command';
-import cli from 'cli-ux';
-import * as fs from "fs-extra";
-import * as path from 'path';
+const open = require('open');
 
 export default class DemoStart extends Command {
   static description = 'Spins up your local Conduit demo deployment';
 
-  private selectedPackages: Package[] = [];
-  private demoConfiguration: ConduitPackageConfiguration = {};
-
   async run() {
     // Retrieve Demo Configuration
-    this.demoConfiguration = await this.retrieveDemoConfig(this)
-      .catch(err => {
-        cli.error(err.message, { exit: -1 });
+    const demoConfiguration = await retrieveDemoConfig(this)
+      .catch(_ => {
+        console.log('No demo configuration available. Run setup script.');
+        process.exit(0);
       });
 
     // Start Containers
-    const docker = new Docker('conduit');
-    await this.startModules(docker);
-  }
-
-  private async startModules(docker: Docker) {
-    for (const pkg of Object.keys(this.demoConfiguration) as Package[]) {
+    const docker = new Docker(getNetworkName(demoConfiguration));
+    for (const pkg of Object.keys(demoConfiguration.packages) as Package[]) {
       if (pkg === 'Database') {
         // TODO: Database module should wait for mongo/pg OR implement container health check here (also for Core/Redis)
         await new Promise(resolve => setTimeout(resolve, 500));
       }
       await docker.run(
         pkg,
-        this.demoConfiguration[pkg]!.tag,
-        formatEnv(this.demoConfiguration[pkg]!.env),
-        formatPorts(this.demoConfiguration[pkg]!.ports),
+        demoConfiguration.packages[pkg].tag,
+        this.formatEnv(demoConfiguration.packages[pkg].env),
+        this.formatPorts(demoConfiguration.packages[pkg].ports),
       );
     }
+
+    // Launch Conduit UI
+    open('http://localhost:8080');
   }
 
-  private async retrieveDemoConfig(command: Command): Promise<ConduitPackageConfiguration> {
-    return await fs.readJSON(path.join(command.config.configDir, 'demo.json'))
-      .catch(_ => { throw new Error('No demo configuration available'); });
+  private formatEnv(env: PackageConfiguration['env']) {
+    const formatted: string[] = [];
+    for (const [key, value] of Object.entries(env)) { formatted.push(`${key}=${value}`); }
+    return formatted;
+  }
+
+  private formatPorts(ports: PackageConfiguration['ports']) {
+    const formatted: { [key: string]: { 'HostPort': string }[] } = {};
+    ports.forEach(port => { formatted[`${port}/tcp`] = [{ 'HostPort': port }]; });
+    return formatted;
   }
 }

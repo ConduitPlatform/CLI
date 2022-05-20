@@ -1,11 +1,18 @@
-import { REDIS_VERSION, MONGO_VERSION, POSTGRES_VERSION } from '../../docker/constants';
-import { ConduitPackageConfiguration, Package, PackageConfiguration } from '../../docker/types';
-import { tagIsValid, getContainerName, getImageName } from '../../docker/utils';
+import {
+  REDIS_VERSION,
+  MONGO_VERSION,
+  POSTGRES_VERSION,
+} from '../../demo/constants';
+import { getContainerName, getImageName, demoIsDeployed } from '../../demo/utils';
+import { ConduitPackageConfiguration, Package, PackageConfiguration } from '../../demo/types';
 import { booleanPrompt, promptWithOptions } from '../../utils/cli';
 import { Docker } from '../../docker/Docker';
+import DemoStart from './start';
+import DemoCleanup from './cleanup';
 import { Command } from '@oclif/command';
+import axios from 'axios';
 import cli from 'cli-ux';
-import * as fs from "fs-extra";
+import * as fs from 'fs-extra';
 import * as path from 'path';
 
 const CONDUIT_SERVER = `${getContainerName('Core')}:55152`;
@@ -29,8 +36,6 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
     env: {
       CONDUIT_SERVER,
       REGISTER_NAME: 'true',
-      // DB_TYPE: 'mongodb',
-      // DB_CONN_URI: 'mongodb://localhost:27017',
     },
     ports: [],
   },
@@ -100,19 +105,36 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
 export default class DemoSetup extends Command {
   static description = 'Bootstraps a local Conduit demo deployment with minimal configuration';
 
+  private readonly networkName = 'conduit';
   private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis', 'Mongo'];
-  private demoConfiguration: ConduitPackageConfiguration = {};
+  private conduitTags: string[] = [];
+  private conduitUiTags: string[] = [];
 
   async run() {
+    // Handle Existing Demo Deployments
+    if (await demoIsDeployed(this)) {
+      const replaceDemo = await booleanPrompt(
+        'An existing demo deployment was detected. Are you sure you wish to overwrite it?'
+      );
+      if (replaceDemo) {
+        await DemoCleanup.run(['--silent']); // TODO: Figure out how to pass boolean flags
+      } else {
+        console.log('Setup canceled');
+        process.exit(0);
+      }
+    }
+
     // Select Tags
-    let latestConduitTag = 'v0.12.6'; // TODO: Let users specify via arg, default to latest supported min version of major
-    let latestConduitUiTag = 'v0.12.3';
+    await this.getConduitTags();
+    await this.getConduitUiTags();
+    let latestConduitTag = (this.conduitTags)[0];
+    let latestConduitUiTag = (this.conduitUiTags)[0];
     let conduitTag = '';
     let conduitUiTag = '';
-    while (!tagIsValid(conduitTag)) {
+    while (!this.conduitTags.includes(conduitTag)) {
       conduitTag = await cli.prompt('Specify your desired Conduit version', { default: latestConduitTag });
     }
-    while (!tagIsValid(conduitUiTag)) {
+    while (!this.conduitUiTags.includes(conduitUiTag)) {
       conduitUiTag = await cli.prompt('Specify your desired Conduit UI version', { default: latestConduitUiTag });
     }
 
@@ -146,27 +168,30 @@ export default class DemoSetup extends Command {
 
     this.sortPackages();
 
-    const docker = new Docker('conduit');
+    const demoConfiguration: ConduitPackageConfiguration = {
+      networkName: this.networkName,
+      packages: {},
+    }
+    const docker = new Docker(this.networkName);
     await docker.createNetwork();
     console.log('\nSetting up container environment. This may take some time...')
     for (const pkg of this.selectedPackages) {
       const containerName = getContainerName(pkg);
-      this.demoConfiguration[pkg] = {
+      demoConfiguration.packages[pkg] = {
         image: getImageName(pkg),
         tag: pkg === 'Redis' ? REDIS_VERSION
           : pkg === 'Mongo' ? MONGO_VERSION
-            : pkg === 'Postgres' ? POSTGRES_VERSION
-              : pkg === 'UI' ? conduitUiTag
-                : conduitTag,
+          : pkg === 'Postgres' ? POSTGRES_VERSION
+          : pkg === 'UI' ? conduitUiTag
+          : conduitTag,
         containerName: containerName,
-        networkName: containerName,
         env: DEMO_CONFIG[pkg].env,
         ports: DEMO_CONFIG[pkg].ports,
       };
-      await docker.pull(pkg, this.demoConfiguration[pkg]!.tag);
+      await docker.pull(pkg, demoConfiguration.packages[pkg]!.tag);
     }
-    this.demoConfiguration['Database']!.env = {
-      ...this.demoConfiguration['Database']!.env,
+    demoConfiguration.packages['Database']!.env = {
+      ...demoConfiguration.packages['Database']!.env,
       DB_TYPE: dbEngineType,
       DB_CONN_URI: dbEngineType === 'mongodb'
         ? 'mongodb://conduit-mongo:27017'
@@ -174,10 +199,13 @@ export default class DemoSetup extends Command {
     };
 
     // Store Demo Configuration
-    await this.storeDemoConfig(this, this.demoConfiguration);
+    await this.storeDemoConfig(this, demoConfiguration);
 
     // Call demo:start
-    // TODO
+    const startDemo = await booleanPrompt('\nStart the Demo?', 'yes');
+    if (startDemo) {
+      await DemoStart.run();
+    }
   }
 
   private sortPackages() {
@@ -192,5 +220,25 @@ export default class DemoSetup extends Command {
   private async storeDemoConfig(command: Command, config: ConduitPackageConfiguration) {
     await fs.ensureFile(path.join(command.config.configDir, 'demo.json'));
     await fs.writeJSON(path.join(command.config.configDir, 'demo.json'), config);
+  }
+
+  private async getConduitTags() {
+    this.conduitTags = await this._getTags('ConduitPlatform/Conduit');
+  }
+
+  private async getConduitUiTags() {
+    this.conduitUiTags = await this._getTags('ConduitPlatform/Conduit-UI');
+  }
+
+  private async _getTags(project: string) {
+    const res = await axios.get(
+      `https://api.github.com/repos/${project}/releases`,
+      { headers: { Accept: 'application/vnd.github.v3+json' } },
+    );
+    const releases: string[] = [];
+    res.data.forEach((release: any) => { releases.push(release.tag_name); });
+    releases.sort().reverse();
+    releases.push('latest');
+    return releases;
   }
 }

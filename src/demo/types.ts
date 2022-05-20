@@ -32,9 +32,11 @@ export interface PackageConfiguration {
   image: Image;
   tag: string;
   containerName: string;
-  networkName: string;
   env: { [field: string]: string };
   ports: string[];
 }
 
-export interface ConduitPackageConfiguration { [key: string]: PackageConfiguration }
+export interface ConduitPackageConfiguration {
+  networkName: string;
+  packages: { [key: string]: PackageConfiguration; };
+}

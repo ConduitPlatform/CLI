@@ -68,7 +68,7 @@ USAGE
   $ conduit demo:setup
 
 OPTIONS
-  --config
+  --config  Enable manual deployment configuration
 ```
 
 _See code: [src/commands/demo/setup.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/setup.ts)_

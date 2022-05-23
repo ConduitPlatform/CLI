@@ -105,7 +105,9 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
 export default class DemoSetup extends Command {
   static description = 'Bootstraps a local Conduit demo deployment with minimal configuration';
   static flags = {
-    config: flags.boolean(),
+    config: flags.boolean({
+      description: 'Enable manual deployment configuration',
+    }),
   };
 
   private readonly networkName = 'conduit';

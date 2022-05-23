@@ -1,5 +1,5 @@
-import { PackageImage } from '../demo/constants';
-import { ConduitPackageConfiguration, Package } from '../demo/types';
+import { PackageImage } from './constants';
+import { ConduitPackageConfiguration, Package } from './types';
 import { Command } from '@oclif/command';
 import { kebabCase } from 'lodash';
 import * as fs from 'fs-extra';

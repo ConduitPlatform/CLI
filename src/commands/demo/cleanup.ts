@@ -1,5 +1,5 @@
 import { Package } from '../../demo/types';
-import { retrieveDemoConfig, getNetworkName, demoIsDeployed } from '../../demo/utils';
+import { retrieveDemoConfig, getNetworkName } from '../../demo/utils';
 import { Docker } from '../../docker/Docker';
 import { booleanPrompt } from '../../utils/cli';
 import { Command, flags } from '@oclif/command';
@@ -27,7 +27,8 @@ export default class DemoCleanup extends Command {
 
     // Stop Demo
     const docker = new Docker(getNetworkName(demoConfiguration));
-    if (await demoIsDeployed(this)) {
+    const demoIsRunning = await docker.containerExists('Core', false, true);
+    if (demoIsRunning) {
       const stopDemo = await booleanPrompt(
         'Proceeding will terminate an active demo deployment. Continue?',
         this.silent ? 'yes' : 'no',

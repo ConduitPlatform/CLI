@@ -25,7 +25,7 @@ export async function promptWithOptions(
 ) {
   if (silent) {
     if (!defaultValue) throw new Error('Cannot set silent to true without a default value');
-    return defaultValue === 'yes';
+    return defaultValue;
   }
   if (defaultValue && !choices.includes(defaultValue)) {
     cli.error(

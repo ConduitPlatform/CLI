@@ -34,7 +34,7 @@ export default class DemoCleanup extends Command {
         this.silent,
       );
       if (stopDemo) {
-        await DemoStop.run();
+        await DemoStop.run(this.silent ? ['--silent'] : []);
       }
       else {
         if (!this.silent) console.log('Cleanup canceled');

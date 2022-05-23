@@ -117,7 +117,7 @@ export default class DemoSetup extends Command {
         'An existing demo deployment was detected. Are you sure you wish to overwrite it?'
       );
       if (replaceDemo) {
-        await DemoCleanup.run(['--silent']); // TODO: Figure out how to pass boolean flags
+        await DemoCleanup.run(['--silent']);
       } else {
         console.log('Setup canceled');
         process.exit(0);

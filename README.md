@@ -52,9 +52,12 @@ Removes your local Conduit demo deployment
 ```
 USAGE
   $ conduit demo:cleanup
+
+OPTIONS
+  --silent
 ```
 
-_See code: [src/commands/demo/cleanup.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/cleanup.ts)_
+_See code: [src/commands/demo/cleanup.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/cleanup.ts)_
 
 ## `conduit demo:setup`
 
@@ -65,7 +68,7 @@ USAGE
   $ conduit demo:setup
 ```
 
-_See code: [src/commands/demo/setup.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/setup.ts)_
+_See code: [src/commands/demo/setup.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/setup.ts)_
 
 ## `conduit demo:start`
 
@@ -76,7 +79,7 @@ USAGE
   $ conduit demo:start
 ```
 
-_See code: [src/commands/demo/start.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/start.ts)_
+_See code: [src/commands/demo/start.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/start.ts)_
 
 ## `conduit demo:stop`
 
@@ -85,9 +88,12 @@ Terminates your local Conduit demo deployment
 ```
 USAGE
   $ conduit demo:stop
+
+OPTIONS
+  --silent
 ```
 
-_See code: [src/commands/demo/stop.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/demo/stop.ts)_
+_See code: [src/commands/demo/stop.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/stop.ts)_
 
 ## `conduit generateSchema [PATH]`
 
@@ -144,7 +150,7 @@ EXAMPLE
   Login Successful!
 ```
 
-_See code: [src/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/src/commands/init.ts)_
+_See code: [src/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/init.ts)_
 <!-- commandsstop -->
 
 #Roadmap

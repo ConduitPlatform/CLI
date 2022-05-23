@@ -66,6 +66,9 @@ Bootstraps a local Conduit demo deployment with minimal configuration
 ```
 USAGE
   $ conduit demo:setup
+
+OPTIONS
+  --config
 ```
 
 _See code: [src/commands/demo/setup.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/setup.ts)_

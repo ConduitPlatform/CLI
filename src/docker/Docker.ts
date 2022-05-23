@@ -22,11 +22,11 @@ export class Docker {
     }
   }
 
-  async removeNetwork() {
+  async removeNetwork(silent = false) {
     const networkExists = (await this.docker.listNetworks())
       .some((net) => { return net.Name === this.networkName; });
     if (networkExists) {
-      console.log(`Removing ${this.networkName} container network`);
+      if (!silent) console.log(`Removing ${this.networkName} container network`);
       await this.docker.getNetwork(this.networkName).remove();
     }
   }

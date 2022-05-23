@@ -9,7 +9,7 @@ import { booleanPrompt, promptWithOptions } from '../../utils/cli';
 import { Docker } from '../../docker/Docker';
 import DemoStart from './start';
 import DemoCleanup from './cleanup';
-import { Command } from '@oclif/command';
+import { Command, flags } from '@oclif/command';
 import axios from 'axios';
 import cli from 'cli-ux';
 import * as fs from 'fs-extra';
@@ -104,13 +104,25 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
 
 export default class DemoSetup extends Command {
   static description = 'Bootstraps a local Conduit demo deployment with minimal configuration';
+  static flags = {
+    config: flags.boolean(),
+  };
 
   private readonly networkName = 'conduit';
   private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis', 'Mongo'];
   private conduitTags: string[] = [];
   private conduitUiTags: string[] = [];
+  private selectedDbEngine: 'mongodb' | 'postgresql' = 'mongodb';
+  private selectedConduitTag: string = '';
+  private selectedConduitUiTag: string = '';
+  private demoConfiguration: ConduitPackageConfiguration = {
+    networkName: this.networkName,
+    packages: {},
+  }
 
   async run() {
+    const userConfiguration = this.parse(DemoSetup).flags.config;
+
     // Handle Existing Demo Deployments
     if (await demoIsDeployed(this)) {
       const replaceDemo = await booleanPrompt(
@@ -124,22 +136,38 @@ export default class DemoSetup extends Command {
       }
     }
 
-    // Select Tags
+    // Configuration
     await this.getConduitTags();
     await this.getConduitUiTags();
+    if (userConfiguration) {
+      await this.configureDeployment();
+    } else {
+      this.selectedConduitTag = this.conduitTags[0];
+      this.selectedConduitUiTag = this.conduitUiTags[0];
+    }
+    await this.processConfiguration();
+    await this.storeDemoConfig(this);
+
+    // Call demo:start
+    const startDemo = userConfiguration ? await booleanPrompt('\nStart the Demo?', 'yes') : true;
+    if (startDemo) {
+      await DemoStart.run();
+    }
+  }
+
+  async configureDeployment() {
+    // Select Tags
     let latestConduitTag = (this.conduitTags)[0];
     let latestConduitUiTag = (this.conduitUiTags)[0];
-    let conduitTag = '';
-    let conduitUiTag = '';
-    while (!this.conduitTags.includes(conduitTag)) {
-      conduitTag = await cli.prompt('Specify your desired Conduit version', { default: latestConduitTag });
+    while (!this.conduitTags.includes(this.selectedConduitTag)) {
+      this.selectedConduitTag = await cli.prompt('Specify your desired Conduit version', { default: latestConduitTag });
     }
-    while (!this.conduitUiTags.includes(conduitUiTag)) {
-      conduitUiTag = await cli.prompt('Specify your desired Conduit UI version', { default: latestConduitUiTag });
+    while (!this.conduitUiTags.includes(this.selectedConduitUiTag)) {
+      this.selectedConduitUiTag = await cli.prompt('Specify your desired Conduit UI version', { default: latestConduitUiTag });
     }
 
     // Select Modules
-    const nonModules: Package[] = ['Core', 'Redis', 'Mongo', 'Postgres'];
+    const nonModules: Package[] = ['Core', 'UI', 'Redis', 'Mongo', 'Postgres'];
     const modules = this.selectedPackages.filter(pkg => !nonModules.includes(pkg));
     console.log('\nThe following Conduit modules are going to be brought up by default:')
     console.log(modules.join(', '));
@@ -165,47 +193,35 @@ export default class DemoSetup extends Command {
       this.selectedPackages.push('Mongo');
     }
     this.selectedPackages.push(dbEngineType === 'mongodb' ? 'Mongo' : 'Postgres');
+  }
 
+  private async processConfiguration() {
     this.sortPackages();
-
-    const demoConfiguration: ConduitPackageConfiguration = {
-      networkName: this.networkName,
-      packages: {},
-    }
     const docker = new Docker(this.networkName);
     await docker.createNetwork();
     console.log('\nSetting up container environment. This may take some time...')
     for (const pkg of this.selectedPackages) {
       const containerName = getContainerName(pkg);
-      demoConfiguration.packages[pkg] = {
+      this.demoConfiguration.packages[pkg] = {
         image: getImageName(pkg),
         tag: pkg === 'Redis' ? REDIS_VERSION
           : pkg === 'Mongo' ? MONGO_VERSION
           : pkg === 'Postgres' ? POSTGRES_VERSION
-          : pkg === 'UI' ? conduitUiTag
-          : conduitTag,
+          : pkg === 'UI' ? this.selectedConduitUiTag
+          : this.selectedConduitTag,
         containerName: containerName,
         env: DEMO_CONFIG[pkg].env,
         ports: DEMO_CONFIG[pkg].ports,
       };
-      await docker.pull(pkg, demoConfiguration.packages[pkg]!.tag);
+      await docker.pull(pkg, this.demoConfiguration.packages[pkg]!.tag);
     }
-    demoConfiguration.packages['Database']!.env = {
-      ...demoConfiguration.packages['Database']!.env,
-      DB_TYPE: dbEngineType,
-      DB_CONN_URI: dbEngineType === 'mongodb'
+    this.demoConfiguration.packages['Database']!.env = {
+      ...this.demoConfiguration.packages['Database']!.env,
+      DB_TYPE: this.selectedDbEngine,
+      DB_CONN_URI: this.selectedDbEngine === 'mongodb'
         ? 'mongodb://conduit-mongo:27017'
         : 'postgres://conduit:pass@localhost:5432/conduit'
     };
-
-    // Store Demo Configuration
-    await this.storeDemoConfig(this, demoConfiguration);
-
-    // Call demo:start
-    const startDemo = await booleanPrompt('\nStart the Demo?', 'yes');
-    if (startDemo) {
-      await DemoStart.run();
-    }
   }
 
   private sortPackages() {
@@ -217,9 +233,9 @@ export default class DemoSetup extends Command {
     });
   }
 
-  private async storeDemoConfig(command: Command, config: ConduitPackageConfiguration) {
+  private async storeDemoConfig(command: Command) {
     await fs.ensureFile(path.join(command.config.configDir, 'demo.json'));
-    await fs.writeJSON(path.join(command.config.configDir, 'demo.json'), config);
+    await fs.writeJSON(path.join(command.config.configDir, 'demo.json'), this.demoConfiguration);
   }
 
   private async getConduitTags() {

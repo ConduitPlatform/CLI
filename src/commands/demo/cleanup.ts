@@ -50,10 +50,10 @@ export default class DemoCleanup extends Command {
     );
     if (!this.silent) console.log('Cleaning up containers' + removeImages ? ' and images' : '');
     for (const pkg of Object.keys(demoConfiguration.packages)) {
-      await docker.rm(pkg as Package);
-      if (removeImages) await docker.rmi(pkg as Package, demoConfiguration.packages[pkg].tag);
+      await docker.rm(pkg as Package, this.silent);
+      if (removeImages) await docker.rmi(pkg as Package, demoConfiguration.packages[pkg].tag, this.silent);
     }
-    await docker.removeNetwork();
+    await docker.removeNetwork(this.silent);
 
     // Delete Demo Configuration
     this.deleteDemoConfig(this);

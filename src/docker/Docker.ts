@@ -36,7 +36,7 @@ export class Docker {
     if (await this.imageExists(packageName, tag)) return;
     console.log(`Pulling ${repoTag}...`);
     const promisifiedPull = function(docker: Dockerode, repoTag: string) {
-      return new Promise((resolve, reject) => {
+      return new Promise<void>((resolve, reject) => {
         docker.pull(repoTag, (err: Error, stream: NodeJS.ReadableStream) => {
           if (err) reject(err);
           docker.modem.followProgress(stream, onFinished);

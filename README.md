@@ -27,7 +27,7 @@ $ npm install -g @conduitplatform/conduit-cli
 $ conduit COMMAND
 running command...
 $ conduit (-v|--version|version)
-@conduitplatform/conduit-cli/0.0.2 linux-x64 node-v16.15.0
+@conduitplatform/conduit-cli/0.0.2 linux-x64 node-v14.19.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -41,6 +41,8 @@ USAGE
 * [`conduit demo:setup`](#conduit-demosetup)
 * [`conduit demo:start`](#conduit-demostart)
 * [`conduit demo:stop`](#conduit-demostop)
+* [`conduit generateClient:graphql`](#conduit-generateclientgraphql)
+* [`conduit generateClient:rest`](#conduit-generateclientrest)
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
 * [`conduit help [COMMAND]`](#conduit-help-command)
 * [`conduit init`](#conduit-init)
@@ -97,6 +99,36 @@ OPTIONS
 ```
 
 _See code: [src/commands/demo/stop.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/stop.ts)_
+
+## `conduit generateClient:graphql`
+
+Generates a GraphQL client library for Conduit's GraphQL API
+
+```
+USAGE
+  $ conduit generateClient:graphql
+
+OPTIONS
+  --client-type=client-type  The client type to generate a library for
+  --output-path=output-path  Path to store archived library in
+```
+
+_See code: [src/commands/generateClient/graphql.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/generateClient/graphql.ts)_
+
+## `conduit generateClient:rest`
+
+Generates a REST API client library for Conduit'S REST API
+
+```
+USAGE
+  $ conduit generateClient:rest
+
+OPTIONS
+  --client-type=client-type  The client type to generate a library for
+  --output-path=output-path  Path to store archived library in
+```
+
+_See code: [src/commands/generateClient/rest.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/generateClient/rest.ts)_
 
 ## `conduit generateSchema [PATH]`
 

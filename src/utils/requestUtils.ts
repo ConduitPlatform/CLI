@@ -15,7 +15,7 @@ export async function recoverCredentials(command: Command) {
 
 export async function recoverUrl(command: Command) {
   const apiConfig = await fs.readJSON(path.join(command.config.configDir, 'config.json'));
-  return { url: apiConfig.url, masterKey: apiConfig.masterKey };
+  return { url: apiConfig.url as string, masterKey: apiConfig.masterKey as string };
 }
 
 export async function storeCredentials(

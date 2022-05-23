@@ -49,7 +49,7 @@ export default class DemoCleanup extends Command {
       'no',
       this.silent,
     );
-    if (!this.silent) console.log('Cleaning up containers' + removeImages ? ' and images' : '');
+    if (!this.silent) console.log('Cleaning up containers' + (removeImages ? ' and images' : ''));
     for (const pkg of Object.keys(demoConfiguration.packages)) {
       await docker.rm(pkg as Package, this.silent);
       if (removeImages) await docker.rmi(pkg as Package, demoConfiguration.packages[pkg].tag, this.silent);

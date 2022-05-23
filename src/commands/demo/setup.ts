@@ -110,8 +110,8 @@ export default class DemoSetup extends Command {
     }),
   };
 
-  private readonly networkName = 'conduit';
-  private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis', 'Mongo'];
+  private readonly networkName = 'conduit-demo';
+  private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis'];
   private conduitTags: string[] = [];
   private conduitUiTags: string[] = [];
   private selectedDbEngine: 'mongodb' | 'postgresql' = 'mongodb';
@@ -151,10 +151,7 @@ export default class DemoSetup extends Command {
     await this.storeDemoConfig(this);
 
     // Call demo:start
-    const startDemo = userConfiguration ? await booleanPrompt('\nStart the Demo?', 'yes') : true;
-    if (startDemo) {
-      await DemoStart.run();
-    }
+    await DemoStart.run();
   }
 
   async configureDeployment() {
@@ -191,9 +188,6 @@ export default class DemoSetup extends Command {
       'mongodb',
       false,
     );
-    if (dbEngineType === 'mongodb') {
-      this.selectedPackages.push('Mongo');
-    }
     this.selectedPackages.push(dbEngineType === 'mongodb' ? 'Mongo' : 'Postgres');
   }
 
@@ -230,7 +224,7 @@ export default class DemoSetup extends Command {
     const reordered = this.selectedPackages.filter(pkg => ['Redis', 'Mongo', 'Postgres'].includes(pkg));
     reordered.forEach(pkg => {
       const packageIndex = this.selectedPackages.indexOf(pkg);
-      this.selectedPackages.splice(packageIndex, packageIndex + 1);
+      this.selectedPackages.splice(packageIndex, 1);
       this.selectedPackages.unshift(pkg);
     });
   }

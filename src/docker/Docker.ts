@@ -98,7 +98,7 @@ export class Docker {
   }
   
   async stop(packageName: Package, silent = false, bypassExistCheck = false) {
-    if (!bypassExistCheck) await this.containerExists(packageName, true);
+    if (!bypassExistCheck) await this.containerExists(packageName, false);
     const isRunning = await this.containerExists(packageName, false, true);
     if (!isRunning) {
       if (!silent) console.log(`${packageName} container is not currently running`);

@@ -31,7 +31,7 @@ export default class DemoStart extends Command {
     }
 
     // Launch Conduit UI
-    open('http://localhost:8080');
+    await open(`http://localhost:${demoConfiguration.packages['UI'].ports[0]}`);
   }
 
   private formatEnv(env: PackageConfiguration['env']) {

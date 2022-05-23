@@ -6,6 +6,7 @@ import {
 import { getContainerName, getImageName, demoIsDeployed } from '../../demo/utils';
 import { ConduitPackageConfiguration, Package, PackageConfiguration } from '../../demo/types';
 import { booleanPrompt, promptWithOptions } from '../../utils/cli';
+import { getPorts, portNumbers } from '../../utils/getPort';
 import { Docker } from '../../docker/Docker';
 import DemoStart from './start';
 import DemoCleanup from './cleanup';
@@ -15,75 +16,77 @@ import cli from 'cli-ux';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-const CONDUIT_SERVER = `${getContainerName('Core')}:55152`;
 const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> } = {
   'Core': {
     env: {
       REDIS_HOST: 'conduit-redis',
-      REDIS_PORT: '6379',
+      REDIS_PORT: '',
       MASTER_KEY: 'M4ST3RK3Y',
+      PORT: '', // HTTP
     },
-    ports: ['55152', '3000', '3001'],
+    ports: ['55152', '3000', '3001'], // gRPC, HTTP, Sockets
   },
   'UI': {
     env: {
-      CONDUIT_URL: 'http://localhost:3000',
+      CONDUIT_URL: '',
       MASTER_KEY: 'M4ST3RK3Y',
     },
     ports: ['8080'],
   },
   'Database': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
+      DB_TYPE: '',
+      DB_CONN_URI: '',
     },
     ports: [],
   },
   'Authentication': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
     },
     ports: [],
   },
   'Chat': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
     },
     ports: [],
   },
   'Email': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
     },
     ports: [],
   },
   'Forms': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
     },
     ports: [],
   },
   'PushNotifications': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
     },
     ports: [],
   },
   'SMS': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
     },
     ports: [],
   },
   'Storage': {
     env: {
-      CONDUIT_SERVER,
+      CONDUIT_SERVER: '',
       REGISTER_NAME: 'true',
     },
     ports: [],
@@ -146,6 +149,7 @@ export default class DemoSetup extends Command {
     } else {
       this.selectedConduitTag = this.conduitTags[0];
       this.selectedConduitUiTag = this.conduitUiTags[0];
+      this.selectedPackages.push('Mongo');
     }
     await this.processConfiguration();
     await this.storeDemoConfig(this);
@@ -207,17 +211,31 @@ export default class DemoSetup extends Command {
           : this.selectedConduitTag,
         containerName: containerName,
         env: DEMO_CONFIG[pkg].env,
-        ports: DEMO_CONFIG[pkg].ports,
+        ports: DEMO_CONFIG[pkg].ports.length > 0 ? await this.getServicePorts(DEMO_CONFIG[pkg].ports) : [],
       };
       await docker.pull(pkg, this.demoConfiguration.packages[pkg]!.tag);
     }
-    this.demoConfiguration.packages['Database']!.env = {
-      ...this.demoConfiguration.packages['Database']!.env,
+    // Update Env Vars
+    this.demoConfiguration.packages['Core'].env = {
+      ...this.demoConfiguration.packages['Core'].env,
+      REDIS_PORT: this.demoConfiguration.packages['Redis'].ports[0],
+      PORT: this.demoConfiguration.packages['Core'].ports[1],
+    };
+    this.demoConfiguration.packages['Database'].env = {
+      ...this.demoConfiguration.packages['Database'].env,
       DB_TYPE: this.selectedDbEngine,
       DB_CONN_URI: this.selectedDbEngine === 'mongodb'
-        ? 'mongodb://conduit-mongo:27017'
-        : 'postgres://conduit:pass@localhost:5432/conduit'
+        ? `mongodb://conduit-mongo:${this.demoConfiguration.packages['Mongo'].ports[0]}`
+        : `postgres://conduit:pass@localhost:${this.demoConfiguration.packages['Postgres'].ports[0]}/conduit`
     };
+    const conduitGrpcPort = this.demoConfiguration.packages['Core'].ports[0];
+    const conduitHttpPort = this.demoConfiguration.packages['Core'].ports[1];
+    this.demoConfiguration.packages['UI'].env['CONDUIT_URL'] = `http://localhost:${conduitHttpPort}`;
+    Object.keys(this.demoConfiguration.packages).forEach(pkg => {
+      if (this.demoConfiguration.packages[pkg].env.hasOwnProperty('CONDUIT_SERVER')) {
+        this.demoConfiguration.packages[pkg].env['CONDUIT_SERVER'] = `${getContainerName('Core')}:${conduitGrpcPort}`;
+      }
+    });
   }
 
   private sortPackages() {
@@ -252,5 +270,14 @@ export default class DemoSetup extends Command {
     releases.sort().reverse();
     releases.push('latest');
     return releases;
+  }
+
+  private async getServicePorts(requestedPorts: string[]) {
+    const availablePorts: string[] = [];
+    for (const p of requestedPorts) {
+      const portRange = portNumbers(Number(p), Number(p) + 5); // target range or default to any available
+      availablePorts.push((await getPorts({ port: portRange })).toString());
+    }
+    return availablePorts;
   }
 }

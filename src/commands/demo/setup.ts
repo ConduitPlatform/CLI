@@ -23,6 +23,7 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
       REDIS_PORT: '',
       MASTER_KEY: 'M4ST3RK3Y',
       PORT: '', // HTTP
+      SOCKET_PORT: '',
     },
     ports: ['55152', '3000', '3001'], // gRPC, HTTP, Sockets
   },
@@ -220,6 +221,7 @@ export default class DemoSetup extends Command {
       ...this.demoConfiguration.packages['Core'].env,
       REDIS_PORT: this.demoConfiguration.packages['Redis'].ports[0],
       PORT: this.demoConfiguration.packages['Core'].ports[1],
+      SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2],
     };
     this.demoConfiguration.packages['Database'].env = {
       ...this.demoConfiguration.packages['Database'].env,

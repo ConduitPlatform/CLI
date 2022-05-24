@@ -1,5 +1,6 @@
 import { PackageImage } from './constants';
 import { ConduitPackageConfiguration, Package } from './types';
+import { Docker } from '../docker/Docker';
 import { Command } from '@oclif/command';
 import { kebabCase } from 'lodash';
 import * as fs from 'fs-extra';
@@ -29,4 +30,13 @@ export async function demoIsDeployed(command: Command) {
   } catch {
     return false
   }
+}
+
+export async function demoIsRunning(docker: Docker, config: ConduitPackageConfiguration) {
+  for (const pkg of Object.keys(config.packages) as Package[]) {
+    if (await docker.containerExists(pkg, false, true)) {
+      return true;
+    }
+  }
+  return false;
 }

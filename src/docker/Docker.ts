@@ -58,9 +58,11 @@ export class Docker {
     silent =  false,
   ) {
     const containerExists = await this.containerExists(packageName);
-    const containerIsRunning = await this.containerExists(packageName, false, true);
-    if (containerExists && containerIsRunning) {
-      await this.start(packageName, false, true);
+    if (containerExists) {
+      const containerIsRunning = await this.containerExists(packageName, false, true);
+      if (!containerIsRunning) {
+        await this.start(packageName, false, true);
+      }
       return;
     }
     if (!silent) console.log(`Running ${packageName}`);

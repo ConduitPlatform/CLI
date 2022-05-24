@@ -28,16 +28,14 @@ export default class DemoCleanup extends Command {
     // Stop Demo
     const docker = new Docker(getNetworkName(demoConfiguration));
     const demoIsRunning = await docker.containerExists('Core', false, true);
+    let stopDemo = false;
     if (demoIsRunning) {
-      const stopDemo = await booleanPrompt(
+      stopDemo = await booleanPrompt(
         'Proceeding will terminate an active demo deployment. Continue?',
         this.silent ? 'yes' : 'no',
         this.silent,
       );
-      if (stopDemo) {
-        await DemoStop.run(this.silent ? ['--silent'] : []);
-      }
-      else {
+      if (!stopDemo) {
         if (!this.silent) console.log('Cleanup canceled');
         process.exit(0);
       }
@@ -49,6 +47,9 @@ export default class DemoCleanup extends Command {
       'no',
       this.silent,
     );
+    if (stopDemo) {
+      await DemoStop.run(this.silent ? ['--silent'] : []);
+    }
     if (!this.silent) console.log('Cleaning up containers' + (removeImages ? ' and images' : ''));
     for (const pkg of Object.keys(demoConfiguration.packages)) {
       await docker.rm(pkg as Package, this.silent);

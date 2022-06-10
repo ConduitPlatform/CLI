@@ -1,5 +1,5 @@
 import { Command, flags } from '@oclif/command';
-import { recoverCredentials } from '../utils/requestUtils';
+import { getRequestClient } from '../utils/requestUtils';
 import cli from 'cli-ux';
 import { Requests } from '../http/http';
 import { generateSchema } from '../generators/Schema/Schema.generator';
@@ -25,7 +25,7 @@ Generating schemas
     cli.action.start('Recovering credentials');
     let requestClient: Requests;
     try {
-      requestClient = await recoverCredentials(this);
+      requestClient = await getRequestClient(this);
       cli.action.stop('Done');
     } catch (e) {
       cli.action.stop('Failed to recover');

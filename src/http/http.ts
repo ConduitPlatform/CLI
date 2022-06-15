@@ -1,4 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
+import * as os from 'os';
 
 export class Requests {
   private readonly URL: string;
@@ -41,7 +42,7 @@ export class Requests {
     if (securityConfig.clientValidation.enabled) {
       this.clientValidation.enabled = true;
       const clients = await this.getSecurityClients();
-      let securityClient = clients.find(client => client.platform === 'LINUX' && client.alias === 'CLI'); // We should add a 'CLI' platform
+      let securityClient = clients.find(client => client.platform === 'CLI' && client.alias === `cli-${os.hostname}`);
       if (!securityClient) {
         securityClient = await this.createSecurityClient();
       }
@@ -107,12 +108,13 @@ export class Requests {
     if (!this.clientValidation.enabled) {
       throw new Error('Security Clients are disabled');
     }
+    const hostname = os.hostname;
     return axios.post(
       `${this.URL}/admin/security/client`,
       {
-        platform: 'LINUX', // We should add a 'CLI' platform
-        alias: 'CLI',
-        notes: 'Conduit CLI Test Client',
+        platform: 'CLI',
+        alias: `cli-${hostname}`,
+        notes: `A Conduit CLI Client for ${hostname}`,
       },
     ).then((r) => r.data);
   }

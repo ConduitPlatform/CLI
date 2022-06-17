@@ -41,13 +41,13 @@ export class Requests {
       });
     if (securityConfig.clientValidation.enabled) {
       this.clientValidation.enabled = true;
-      const clients = await this.getSecurityClients();
+      const clients = await this.fetchSecurityClients();
       let securityClient = clients.find(client => client.platform === 'CLI' && client.alias === `cli-${os.hostname}`);
       if (!securityClient) {
         securityClient = await this.createSecurityClient();
       }
       this.clientValidation.clientId = securityClient.clientId;
-      this.clientValidation = securityClient.clientSecret;
+      this.clientValidation.clientSecret = securityClient.clientSecret;
     }
   }
 
@@ -97,7 +97,7 @@ export class Requests {
     return axios.get(`${this.URL}/admin/config/${module}`).then(r => r.data.config);
   }
 
-  getSecurityClients(): Promise<any[]> {
+  fetchSecurityClients(): Promise<any[]> {
     if (!this.clientValidation.enabled) {
       throw new Error('Security Clients are disabled');
     }

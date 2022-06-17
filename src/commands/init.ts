@@ -35,7 +35,7 @@ Login Successful!
       if (!masterKey) {
         masterKey = await cli.prompt('Add the master key of your Conduit installation');
       }
-      requestInstance = new Requests(url, masterKey);
+      requestInstance = new Requests(this, url, masterKey);
       const pingSuccessful = await requestInstance.httpHealthCheck();
       if (pingSuccessful) break;
       console.log(`Could not ping Conduit's HTTP server at ${url}`);
@@ -55,6 +55,7 @@ Login Successful!
         cli.action.stop('Login failed!\n\n');
       }
     }
+    await requestInstance.initialize(admin, password); // handle additional configuration
     await storeConfiguration(this, { url, masterKey }, { admin, password });
   }
 }

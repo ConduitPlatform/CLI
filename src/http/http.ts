@@ -1,7 +1,10 @@
+import { Command } from '@oclif/command';
 import axios, { AxiosResponse } from 'axios';
+import { storeSecurityClientConfiguration, recoverSecurityClientConfig } from '../utils/requestUtils';
 import * as os from 'os';
 
 export class Requests {
+  private readonly command: Command;
   private readonly URL: string;
   private readonly baseHeaders: {
     masterkey: string;
@@ -13,7 +16,8 @@ export class Requests {
     clientSecret?: string,
   } = { enabled: false };
 
-  constructor(url: string, masterKey: string) {
+  constructor(command: Command, url: string, masterKey: string) {
+    this.command = command;
     this.URL = url;
     this.baseHeaders = {
       masterkey: masterKey,
@@ -41,9 +45,9 @@ export class Requests {
       });
     if (securityConfig.clientValidation.enabled) {
       this.clientValidation.enabled = true;
-      const clients = await this.fetchSecurityClients();
-      let securityClient = clients.find(client => client.platform === 'CLI' && client.alias === `cli-${os.hostname}`);
-      if (!securityClient) {
+      let securityClient = await recoverSecurityClientConfig(this.command)
+        .catch(_ => { return { clientId: '', clientSecret: '' } });
+      if (!await this.validSecurityClient(securityClient.clientId)) {
         securityClient = await this.createSecurityClient();
       }
       this.clientValidation.clientId = securityClient.clientId;
@@ -109,13 +113,21 @@ export class Requests {
       throw new Error('Security Clients are disabled');
     }
     const hostname = os.hostname;
-    return axios.post(
+    const uniqueSuffix = (Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(36)).substring(0, 6);
+    const securityClient = await axios.post(
       `${this.URL}/admin/security/client`,
       {
         platform: 'CLI',
-        alias: `cli-${hostname}`,
+        alias: `cli-${hostname}_${uniqueSuffix}`,
         notes: `A Conduit CLI Client for ${hostname}`,
       },
-    ).then((r) => r.data);
+    ).then(r => { return { clientId: r.data.clientId, clientSecret: r.data.clientSecret } })
+    await storeSecurityClientConfiguration(this.command, securityClient);
+    return securityClient;
+  }
+
+  async validSecurityClient(clientId: string) {
+    const clients = await this.fetchSecurityClients();
+    return clients.some(client => client.clientId === clientId);
   }
 }

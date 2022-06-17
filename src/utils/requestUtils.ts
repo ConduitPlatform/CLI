@@ -21,14 +21,25 @@ export async function getRequestClient(command: Command) {
   const apiConfig = await fs.readJSON(apiConfigPath);
   const adminConfig = await fs.readJSON(adminConfigPath);
   // Initialize Requests Client
-  const requestClient = new Requests(apiConfig.url, apiConfig.masterKey);
+  const requestClient = new Requests(command, apiConfig.url, apiConfig.masterKey);
   await requestClient.initialize(adminConfig.admin, adminConfig.password);
   return requestClient;
 }
 
 export async function recoverApiConfig(command: Command) {
   const apiConfig = await fs.readJSON(path.join(command.config.configDir, 'config.json'));
-  return { url: apiConfig.url as string, masterKey: apiConfig.masterKey as string };
+  return {
+    url: apiConfig.url as string,
+    masterKey: apiConfig.masterKey as string,
+  };
+}
+
+export async function recoverSecurityClientConfig(command: Command) {
+  const securityClientConfig = await fs.readJSON(path.join(command.config.configDir, 'securityClient.json'));
+  return {
+    clientId: securityClientConfig.clientId as string,
+    clientSecret: securityClientConfig.clientSecret as string,
+  };
 }
 
 export async function storeConfiguration(
@@ -40,4 +51,12 @@ export async function storeConfiguration(
   await fs.ensureFile(path.join(command.config.configDir, 'admin.json'));
   await fs.writeJSON(path.join(command.config.configDir, 'config.json'), environment);
   await fs.writeJSON(path.join(command.config.configDir, 'admin.json'), admin);
+}
+
+export async function storeSecurityClientConfiguration(
+  command: Command,
+  securityClient: { clientId: string, clientSecret: string }
+) {
+  await fs.ensureFile(path.join(command.config.configDir, 'securityClient.json'));
+  await fs.writeJSON(path.join(command.config.configDir, 'securityClient.json'), securityClient);
 }

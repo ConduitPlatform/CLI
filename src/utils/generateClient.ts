@@ -3,7 +3,7 @@ import cli from 'cli-ux';
 import { booleanPrompt, promptWithOptions } from './cli';
 import * as fs from 'fs';
 import * as path from 'path';
-import { recoverUrl } from './requestUtils';
+import { recoverApiConfig } from './requestUtils';
 import Init from '../commands/init';
 
 export interface GenerateClientFlags {
@@ -46,7 +46,7 @@ export async function getOutputPath(
 }
 
 export async function getBaseUrl(command: Command) {
-  const { url } = await recoverUrl(command)
+  const { url } = await recoverApiConfig(command)
     .catch(async _ => {
       const runInit = await booleanPrompt(
         'No configuration found. Run init and proceed?', 'yes');
@@ -56,7 +56,7 @@ export async function getBaseUrl(command: Command) {
       }
       const init = new Init(command.argv, command.config);
       await init.run();
-      return await recoverUrl(command);
+      return await recoverApiConfig(command);
     });
   return url;
 }

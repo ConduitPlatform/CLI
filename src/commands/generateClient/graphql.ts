@@ -2,7 +2,9 @@ import { Command, flags } from '@oclif/command';
 import { generate } from '@graphql-codegen/cli';
 import cli from 'cli-ux';
 import { isEmpty } from 'lodash';
+import { Requests } from '../../http/http';
 import { booleanPrompt } from '../../utils/cli';
+import { getRequestClient } from '../../utils/requestUtils';
 import { getClientType, getOutputPath, getBaseUrl } from '../../utils/generateClient';
 
 type CONFIG_OPTIONS_BASE_T =
@@ -50,8 +52,23 @@ export default class GenerateClientGraphql extends Command {
   async run() {
     const url = await getBaseUrl(this);
     const parsedFlags = this.parse(GenerateClientGraphql).flags;
+    cli.action.start('Recovering credentials');
+    let requestClient: Requests;
+    try {
+      requestClient = await getRequestClient(this);
+      cli.action.stop('Done');
+    } catch (e) {
+      cli.action.stop('Failed to recover');
+      return;
+    }
+    let headers = {};
+    if (requestClient.securityClient) {
+      headers = {
+        clientid: requestClient.securityClient.clientId,
+        clientsecret: requestClient.securityClient.clientSecret,
+      };
+    }
     const clientType = await getClientType(parsedFlags, SUPPORTED_PLUGINS);
-    const { clientId, clientSecret } = await this.getSecurityClient();
     await this.getConfig(clientType);
     const plugins = this.configurePlugins(clientType);
     const libPath = (await getOutputPath(parsedFlags, 'graphql')) + this.fileNameSuffix;
@@ -59,10 +76,7 @@ export default class GenerateClientGraphql extends Command {
       await generate({
         schema: {
           [`${url}/graphql`]: {
-            headers: {
-              clientid: clientId,
-              clientsecret: clientSecret,
-            },
+            headers,
           },
         },
         generates: {
@@ -127,12 +141,4 @@ export default class GenerateClientGraphql extends Command {
     const validOptions = configOptions.filter(opt => this.genConfig[opt] === true);
     this.fileNameSuffix = `.${validOptions.join('.')}`;
   };
-
-  private async getSecurityClient() {
-    // TODO: We would ideally be generating a cli-related security client on 'init' down the road.
-    //       Also missing validation. Retrieve clients with creds and find stored pair or regenerate.
-    const clientId = await cli.prompt('Specify security client id');
-    const clientSecret = await cli.prompt('Specify security client secret');
-    return {clientId, clientSecret};
-  }
 }

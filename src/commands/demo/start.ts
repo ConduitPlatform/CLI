@@ -10,7 +10,7 @@ export default class DemoStart extends Command {
   async run() {
     // Retrieve Demo Configuration
     const demoConfiguration = await retrieveDemoConfig(this)
-      .catch(_ => {
+      .catch(() => {
         console.log('No demo configuration available. Run setup script.');
         process.exit(0);
       });

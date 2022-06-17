@@ -45,7 +45,7 @@ export async function getOutputPath(
 
 export async function getBaseUrl(command: Command) {
   const { url } = await recoverApiConfig(command)
-    .catch(async _ => {
+    .catch(async () => {
       const runInit = await booleanPrompt(
         'No configuration found. Run init and proceed?', 'yes');
       if (!runInit) {

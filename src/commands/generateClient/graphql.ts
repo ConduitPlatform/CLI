@@ -140,5 +140,5 @@ export default class GenerateClientGraphql extends Command {
     if (isEmpty(configOptions)) return '';
     const validOptions = configOptions.filter(opt => this.genConfig[opt] === true);
     this.fileNameSuffix = `.${validOptions.join('.')}`;
-  };
+  }
 }

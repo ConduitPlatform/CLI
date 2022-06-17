@@ -1,6 +1,7 @@
 import { Command } from '@oclif/command';
 import axios, { AxiosResponse } from 'axios';
 import { storeSecurityClientConfiguration, recoverSecurityClientConfig } from '../utils/requestUtils';
+import { IGetSecurityClients } from '../interfaces';
 import * as os from 'os';
 
 export class Requests {
@@ -39,14 +40,14 @@ export class Requests {
   async initialize(username: string, password: string) {
     this.token = await this.loginRequest(username, password);
     const securityConfig = await this.getModuleConfig('security')
-      .catch(_ => {
+      .catch(() => {
         console.log('Failed to retrieve Conduit Security configuration');
         process.exit(-1);
       });
     if (securityConfig.clientValidation.enabled) {
       this.clientValidation.enabled = true;
       let securityClient = await recoverSecurityClientConfig(this.command)
-        .catch(_ => { return { clientId: '', clientSecret: '' } });
+        .catch(() => { return { clientId: '', clientSecret: '' } });
       if (!await this.validSecurityClient(securityClient.clientId)) {
         securityClient = await this.createSecurityClient();
       }
@@ -71,8 +72,8 @@ export class Requests {
   // API Requests
   async httpHealthCheck() {
     return axios.get(`${this.URL}/health`)
-      .then(_ => { return true; })
-      .catch(_ => { return false; });
+      .then(() => true)
+      .catch(() => false);
   }
 
   loginRequest(username: string, password: string): Promise<string> {
@@ -101,11 +102,11 @@ export class Requests {
     return axios.get(`${this.URL}/admin/config/${module}`).then(r => r.data.config);
   }
 
-  fetchSecurityClients(): Promise<any[]> {
+  fetchSecurityClients() {
     if (!this.clientValidation.enabled) {
       throw new Error('Security Clients are disabled');
     }
-    return axios.get(`${this.URL}/admin/security/client`).then(r => r.data.clients);
+    return axios.get(`${this.URL}/admin/security/client`).then((r: IGetSecurityClients) => r.data.clients);
   }
 
   async createSecurityClient() {

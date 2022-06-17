@@ -17,6 +17,7 @@ export default class GenerateClientRest extends Command {
       description: 'Path to store archived library in',
     }),
   }
+  private supportedClientTypes: string[] = [];
 
   async run() {
     const url = await getBaseUrl(this);
@@ -27,7 +28,8 @@ export default class GenerateClientRest extends Command {
       ['app', 'admin'],
       'app',
     )) as 'app' | 'admin';
-    const clientType = await getClientType(parsedFlags);
+    this.getSupportedClientTypes();
+    const clientType = await getClientType(parsedFlags, this.supportedClientTypes);
     const libPath = await getOutputPath(parsedFlags, 'rest', requestType);
     const inputSpec = (requestType === 'admin') ? 'admin/swagger.json' : 'swagger.json';
     try {
@@ -43,7 +45,7 @@ export default class GenerateClientRest extends Command {
     }
   }
 
-  async convertToZip(libPath: string) {
+  private async convertToZip(libPath: string) {
     const zipPath = `${libPath}.zip`
     execSync(`zip -r ${zipPath} ${libPath}`);
     fs.rm(libPath, { recursive: true, force: true }, (err) => {
@@ -53,5 +55,15 @@ export default class GenerateClientRest extends Command {
       }
     });
     return zipPath;
+  }
+
+  private getSupportedClientTypes() {
+    try {
+      this.supportedClientTypes = execSync('npx @openapitools/openapi-generator-cli list -s')
+        .toString().split(',');
+    } catch (error) {
+      console.error(error);
+      cli.exit(-1);
+    }
   }
 }

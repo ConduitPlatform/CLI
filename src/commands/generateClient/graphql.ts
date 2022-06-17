@@ -19,8 +19,6 @@ type CONFIG_OPTIONS_REACT_APOLLO_T =
   | 'reactApolloVersion'
   | 'operationResultSuffix';
 
-const SUPPORTED_PLUGINS = ['typescript', 'react', 'react-apollo', 'angular', 'vue-urql', 'vue-apollo', 'svelte'];
-
 export default class GenerateClientGraphql extends Command {
   static description = `Generates a GraphQL client library for Conduit's GraphQL API`;
   static flags = {
@@ -33,6 +31,8 @@ export default class GenerateClientGraphql extends Command {
       description: 'Path to store archived library in',
     }),
   }
+  private supportedClientTypes: string[] =
+    ['typescript', 'react', 'react-apollo', 'angular', 'vue-urql', 'vue-apollo', 'svelte'];
   private genConfig: { [field: string]: string | boolean } = {};
   private fileNameSuffix: string = '';
 
@@ -68,7 +68,7 @@ export default class GenerateClientGraphql extends Command {
         clientsecret: requestClient.securityClient.clientSecret,
       };
     }
-    const clientType = await getClientType(parsedFlags, SUPPORTED_PLUGINS);
+    const clientType = await getClientType(parsedFlags, this.supportedClientTypes);
     await this.getConfig(clientType);
     const plugins = this.configurePlugins(clientType);
     const libPath = (await getOutputPath(parsedFlags, 'graphql')) + this.fileNameSuffix;

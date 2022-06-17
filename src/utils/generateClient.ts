@@ -1,6 +1,6 @@
 import { Command } from '@oclif/command';
 import cli from 'cli-ux';
-import { booleanPrompt, promptWithOptions } from './cli';
+import { booleanPrompt } from './cli';
 import * as fs from 'fs';
 import * as path from 'path';
 import { recoverApiConfig } from './requestUtils';
@@ -11,14 +11,12 @@ export interface GenerateClientFlags {
   'output-path': string | undefined,
 }
 
-export async function getClientType(parsedFlags: GenerateClientFlags, options?: string[]) {
-  let clientType: string | undefined = parsedFlags['client-type'];
-  if (!clientType) {
-    if (!options) {
-      clientType = (await cli.prompt('Specify client type')).toLowerCase();
-    } else {
-      clientType = await promptWithOptions('Specify client type', options);
-    }
+export async function getClientType(parsedFlags: GenerateClientFlags, supportedClientTypes: string[]) {
+  let clientType = parsedFlags['client-type'] ?? '';
+  while (!supportedClientTypes.includes(clientType)) {
+    console.log('\nSupported Client Types:');
+    supportedClientTypes.forEach(type => console.log(`- ${type}`));
+    clientType = (await cli.prompt('Specify client type')).toLowerCase();
   }
   return clientType as string;
 }

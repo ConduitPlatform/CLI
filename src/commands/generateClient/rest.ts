@@ -20,6 +20,12 @@ export default class GenerateClientRest extends Command {
   private supportedClientTypes: string[] = [];
 
   async run() {
+    const javaVersion = this.getJavaVersion();
+    if (!javaVersion) {
+      // This is a temporary solution until we figure out the best way to approach this using Docker
+      console.log('Failed to detect Java installation.');
+      cli.exit(-1);
+    }
     const url = await getBaseUrl(this);
     const parsedFlags = this.parse(GenerateClientRest).flags;
     console.log(`Conduit's REST API supports both application and administration requests.`);
@@ -64,6 +70,16 @@ export default class GenerateClientRest extends Command {
     } catch (error) {
       console.error(error);
       cli.exit(-1);
+    }
+  }
+
+  private getJavaVersion() {
+    try {
+      const javaVersion = execSync('java --version 2> /dev/null').toString().split(' ')[1];
+      console.log(javaVersion);
+      return javaVersion;
+    } catch (error) {
+      return false;
     }
   }
 }

@@ -20,7 +20,7 @@ export default class DemoCleanup extends Command {
 
     // Retrieve Demo Configuration
     const demoConfiguration = await retrieveDemoConfig(this)
-      .catch(_ => {
+      .catch(() => {
         if (!this.silent) console.log('No Conduit demo available. Nothing to do here.');
         process.exit(0);
       });

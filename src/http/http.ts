@@ -1,7 +1,11 @@
+import { Command } from '@oclif/command';
 import axios, { AxiosResponse } from 'axios';
+import { storeSecurityClientConfiguration, recoverSecurityClientConfig } from '../utils/requestUtils';
+import { IGetSecurityClients } from '../interfaces';
 import * as os from 'os';
 
 export class Requests {
+  private readonly command: Command;
   private readonly URL: string;
   private readonly baseHeaders: {
     masterkey: string;
@@ -13,7 +17,8 @@ export class Requests {
     clientSecret?: string,
   } = { enabled: false };
 
-  constructor(url: string, masterKey: string) {
+  constructor(command: Command, url: string, masterKey: string) {
+    this.command = command;
     this.URL = url;
     this.baseHeaders = {
       masterkey: masterKey,
@@ -35,19 +40,19 @@ export class Requests {
   async initialize(username: string, password: string) {
     this.token = await this.loginRequest(username, password);
     const securityConfig = await this.getModuleConfig('security')
-      .catch(_ => {
+      .catch(() => {
         console.log('Failed to retrieve Conduit Security configuration');
         process.exit(-1);
       });
     if (securityConfig.clientValidation.enabled) {
       this.clientValidation.enabled = true;
-      const clients = await this.getSecurityClients();
-      let securityClient = clients.find(client => client.platform === 'CLI' && client.alias === `cli-${os.hostname}`);
-      if (!securityClient) {
+      let securityClient = await recoverSecurityClientConfig(this.command)
+        .catch(() => { return { clientId: '', clientSecret: '' } });
+      if (!await this.validSecurityClient(securityClient.clientId)) {
         securityClient = await this.createSecurityClient();
       }
       this.clientValidation.clientId = securityClient.clientId;
-      this.clientValidation = securityClient.clientSecret;
+      this.clientValidation.clientSecret = securityClient.clientSecret;
     }
   }
 
@@ -67,8 +72,8 @@ export class Requests {
   // API Requests
   async httpHealthCheck() {
     return axios.get(`${this.URL}/health`)
-      .then(_ => { return true; })
-      .catch(_ => { return false; });
+      .then(() => true)
+      .catch(() => false);
   }
 
   loginRequest(username: string, password: string): Promise<string> {
@@ -97,11 +102,11 @@ export class Requests {
     return axios.get(`${this.URL}/admin/config/${module}`).then(r => r.data.config);
   }
 
-  getSecurityClients(): Promise<any[]> {
+  fetchSecurityClients() {
     if (!this.clientValidation.enabled) {
       throw new Error('Security Clients are disabled');
     }
-    return axios.get(`${this.URL}/admin/security/client`).then(r => r.data.clients);
+    return axios.get(`${this.URL}/admin/security/client`).then((r: IGetSecurityClients) => r.data.clients);
   }
 
   async createSecurityClient() {
@@ -109,13 +114,21 @@ export class Requests {
       throw new Error('Security Clients are disabled');
     }
     const hostname = os.hostname;
-    return axios.post(
+    const uniqueSuffix = (Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(36)).substring(0, 6);
+    const securityClient = await axios.post(
       `${this.URL}/admin/security/client`,
       {
         platform: 'CLI',
-        alias: `cli-${hostname}`,
+        alias: `cli-${hostname}_${uniqueSuffix}`,
         notes: `A Conduit CLI Client for ${hostname}`,
       },
-    ).then((r) => r.data);
+    ).then(r => { return { clientId: r.data.clientId, clientSecret: r.data.clientSecret } })
+    await storeSecurityClientConfiguration(this.command, securityClient);
+    return securityClient;
+  }
+
+  async validSecurityClient(clientId: string) {
+    const clients = await this.fetchSecurityClients();
+    return clients.some(client => client.clientId === clientId);
   }
 }

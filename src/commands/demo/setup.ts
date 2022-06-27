@@ -268,8 +268,17 @@ export default class DemoSetup extends Command {
       { headers: { Accept: 'application/vnd.github.v3+json' } },
     );
     const releases: string[] = [];
-    res.data.forEach((release: any) => { releases.push(release.tag_name); });
+    const rcReleases: string[] = [];
+    res.data.forEach((release: any) => {
+      if (release.tag_name.indexOf('-rc') === -1) {
+        releases.push(release.tag_name);
+      } else {
+        rcReleases.push(release.tag_name);
+      }
+    });
     releases.sort().reverse();
+    rcReleases.sort().reverse();
+    releases.push.apply(releases, rcReleases);
     releases.push('latest');
     return releases;
   }

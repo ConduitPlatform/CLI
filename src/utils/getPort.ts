@@ -88,7 +88,7 @@ const portCheckSequence = function * (ports: Iterable<number> | undefined) {
   yield 0; // Fall back to 0 if anything else failed
 };
 
-export async function getPorts(options: Options): Promise<number> {
+export async function getPort(options: Options): Promise<number> {
   let ports;
   let exclude = new Set();
 

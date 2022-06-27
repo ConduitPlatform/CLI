@@ -40,9 +40,12 @@ export default class DemoStart extends Command {
     return formatted;
   }
 
-  private formatPorts(ports: PackageConfiguration['ports']) {
+  private formatPorts(portBindings: PackageConfiguration['ports']) {
     const formatted: { [key: string]: { 'HostPort': string }[] } = {};
-    ports.forEach(port => { formatted[`${port}/tcp`] = [{ 'HostPort': port }]; });
+    portBindings.forEach(portBinding => {
+      const [hostPort, containerPort] = portBinding.split(':');
+      formatted[`${containerPort}/tcp`] = [{ 'HostPort': hostPort }];
+    });
     return formatted;
   }
 }

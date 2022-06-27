@@ -6,7 +6,7 @@ import {
 import { getContainerName, getImageName, demoIsDeployed } from '../../demo/utils';
 import { ConduitPackageConfiguration, Package, PackageConfiguration } from '../../demo/types';
 import { booleanPrompt, promptWithOptions } from '../../utils/cli';
-import { getPorts, portNumbers } from '../../utils/getPort';
+import { getPort, portNumbers } from '../../utils/getPort';
 import { Docker } from '../../docker/Docker';
 import DemoStart from './start';
 import DemoCleanup from './cleanup';
@@ -212,26 +212,26 @@ export default class DemoSetup extends Command {
           : this.selectedConduitTag,
         containerName: containerName,
         env: DEMO_CONFIG[pkg].env,
-        ports: DEMO_CONFIG[pkg].ports.length > 0 ? await this.getServicePorts(DEMO_CONFIG[pkg].ports) : [],
+        ports: DEMO_CONFIG[pkg].ports.length > 0 ? await this.getServicePortBindings(DEMO_CONFIG[pkg].ports) : [],
       };
       await docker.pull(pkg, this.demoConfiguration.packages[pkg]!.tag);
     }
     // Update Env Vars
     this.demoConfiguration.packages['Core'].env = {
       ...this.demoConfiguration.packages['Core'].env,
-      REDIS_PORT: this.demoConfiguration.packages['Redis'].ports[0],
-      PORT: this.demoConfiguration.packages['Core'].ports[1],
-      SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2],
+      REDIS_PORT: this.demoConfiguration.packages['Redis'].ports[0].split(':')[1],
+      PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
+      SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
     };
     this.demoConfiguration.packages['Database'].env = {
       ...this.demoConfiguration.packages['Database'].env,
       DB_TYPE: this.selectedDbEngine,
       DB_CONN_URI: this.selectedDbEngine === 'mongodb'
-        ? `mongodb://conduit-mongo:${this.demoConfiguration.packages['Mongo'].ports[0]}`
+        ? `mongodb://conduit-mongo:${this.demoConfiguration.packages['Mongo'].ports[0].split(':')[1]}`
         : `postgres://conduit:pass@localhost:${this.demoConfiguration.packages['Postgres'].ports[0]}/conduit`
     };
-    const conduitGrpcPort = this.demoConfiguration.packages['Core'].ports[0];
-    const conduitHttpPort = this.demoConfiguration.packages['Core'].ports[1];
+    const conduitGrpcPort = this.demoConfiguration.packages['Core'].ports[0].split(':')[1];
+    const conduitHttpPort = this.demoConfiguration.packages['Core'].ports[1].split(':')[1];
     this.demoConfiguration.packages['UI'].env['CONDUIT_URL'] = `http://localhost:${conduitHttpPort}`;
     Object.keys(this.demoConfiguration.packages).forEach(pkg => {
       if (this.demoConfiguration.packages[pkg].env.hasOwnProperty('CONDUIT_SERVER')) {
@@ -283,12 +283,12 @@ export default class DemoSetup extends Command {
     return releases;
   }
 
-  private async getServicePorts(requestedPorts: string[]) {
-    const availablePorts: string[] = [];
+  private async getServicePortBindings(requestedPorts: string[]) {
+    const portBindings: string[] = [];
     for (const p of requestedPorts) {
       const portRange = portNumbers(Number(p), Number(p) + 5); // target range or default to any available
-      availablePorts.push((await getPorts({ port: portRange })).toString());
+      portBindings.push(`${await getPort({ port: portRange })}:${p}`); // host:container
     }
-    return availablePorts;
+    return portBindings;
   }
 }

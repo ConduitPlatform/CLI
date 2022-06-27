@@ -60,6 +60,7 @@
   "license": "MIT",
   "main": "dist/index.js",
   "oclif": {
+    "macos": {"identifier": "dev.getconduit.cli"},
     "commands": "./dist/commands",
     "bin": "conduit",
     "plugins": [

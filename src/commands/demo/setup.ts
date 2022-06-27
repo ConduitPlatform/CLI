@@ -278,7 +278,7 @@ export default class DemoSetup extends Command {
     });
     releases.sort().reverse();
     rcReleases.sort().reverse();
-    releases.push.apply(releases, rcReleases);
+    releases.push(...rcReleases);
     releases.push('latest');
     return releases;
   }

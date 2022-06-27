@@ -175,8 +175,8 @@ USAGE
   $ conduit init
 
 OPTIONS
-  -h, --help             show CLI help
-  -r, --relogin=relogin  Reuses url and master key
+  -h, --help     show CLI help
+  -r, --relogin  Reuses url and master key from existing configuration
 
 EXAMPLE
   $ conduit init

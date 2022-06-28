@@ -16,13 +16,8 @@
     "@graphql-codegen/typescript-react-query": "^3.5.12",
     "@graphql-codegen/typescript-vue-apollo": "^3.2.12",
     "@graphql-codegen/typescript-vue-urql": "^2.2.12",
-    "@oclif/command": "^1",
-    "@oclif/config": "^1",
-    "@oclif/plugin-help": "^3",
-    "@oclif/screen": "^1.0.4",
     "@openapitools/openapi-generator-cli": "^2.5.1",
     "axios": "^0.24.0",
-    "cli-ux": "5.6.7",
     "dockerode": "^3.3.1",
     "fs-extra": "^10.0.0",
     "graphql": "^15.0.0",
@@ -31,16 +26,15 @@
     "js-yaml": "^4.0.0",
     "lodash": "^4.17.21",
     "natural-orderby": "^2.0.1",
+    "oclif": "^3.0.1",
     "open": "^8.4.0",
     "tslib": "^1"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1",
     "@types/dockerode": "^3.3.9",
     "@types/fs-extra": "^9.0.13",
     "@types/lodash": "^4.14.182",
     "@types/node": "14",
-    "globby": "^10",
     "ts-node": "^8",
     "typescript": "~4.2.0"
   },
@@ -60,12 +54,17 @@
   "license": "MIT",
   "main": "dist/index.js",
   "oclif": {
-    "macos": {"identifier": "dev.getconduit.cli"},
     "commands": "./dist/commands",
     "bin": "conduit",
     "plugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "topicSeparator": " ",
+    "additionalHelpFlags": ["-h"],
+    "additionalVersionFlags": ["-v"],
+    "macos": {
+      "identifier": "dev.getconduit.cli"
+    }
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
@@ -77,9 +76,9 @@
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "prepack": "rm -rf dist && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "prepack": "rm -rf dist && tsc -b && oclif manifest && oclif readme",
     "test": "echo NO TESTS",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif readme && git add README.md"
   },
   "types": "dist/index.d.ts"
 }

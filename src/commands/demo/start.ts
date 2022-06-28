@@ -1,7 +1,7 @@
 import { Package, PackageConfiguration } from '../../demo/types';
 import { retrieveDemoConfig, getNetworkName } from '../../demo/utils';
 import { Docker } from '../../docker/Docker';
-import { Command } from '@oclif/command';
+import { Command } from '@oclif/core';
 const open = require('open');
 
 export default class DemoStart extends Command {

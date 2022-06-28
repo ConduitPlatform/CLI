@@ -2,7 +2,7 @@ import { Package } from '../../demo/types';
 import { retrieveDemoConfig, getNetworkName, demoIsRunning } from '../../demo/utils';
 import { Docker } from '../../docker/Docker';
 import { booleanPrompt } from '../../utils/cli';
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import DemoStop from './stop';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -10,13 +10,13 @@ import * as path from 'path';
 export default class DemoCleanup extends Command {
   static description = 'Removes your local Conduit demo deployment';
   static flags = {
-    silent: flags.boolean(),
+    silent: Flags.boolean(),
   };
 
   private silent: boolean = false;
 
   async run() {
-    this.silent = this.parse(DemoCleanup).flags.silent;
+    this.silent = (await this.parse(DemoCleanup)).flags.silent;
 
     // Retrieve Demo Configuration
     const demoConfiguration = await retrieveDemoConfig(this)

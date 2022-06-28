@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags } from '@oclif/core';
 import { Docker } from '../../docker/Docker';
 import { retrieveDemoConfig, getNetworkName } from '../../demo/utils';
 import { Package } from '../../demo/types';
@@ -6,13 +6,13 @@ import { Package } from '../../demo/types';
 export default class DemoStop extends Command {
   static description = 'Terminates your local Conduit demo deployment';
   static flags = {
-    silent: flags.boolean(),
+    silent: Flags.boolean(),
   };
 
   private silent: boolean = false;
 
   async run() {
-    this.silent = this.parse(DemoStop).flags.silent;
+    this.silent = (await this.parse(DemoStop)).flags.silent;
 
     // Retrieve Demo Configuration
     const demoConfiguration = await retrieveDemoConfig(this)

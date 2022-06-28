@@ -1,6 +1,6 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import Command from '@oclif/command';
+import { Command } from '@oclif/core';
 import { Requests } from '../http/http';
 import { booleanPrompt } from './cli';
 import Init from './../commands/init';

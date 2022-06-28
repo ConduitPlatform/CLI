@@ -1,4 +1,4 @@
-import { Command } from '@oclif/command';
+import { Command } from '@oclif/core';
 import axios, { AxiosResponse } from 'axios';
 import { storeSecurityClientConfiguration, recoverSecurityClientConfig } from '../utils/requestUtils';
 import { IGetSecurityClients } from '../interfaces';

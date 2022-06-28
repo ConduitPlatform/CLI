@@ -1,5 +1,4 @@
-import { Command, flags } from '@oclif/command';
-import cli from 'cli-ux';
+import { Command, Flags, CliUx } from '@oclif/core';
 import { promptWithOptions } from '../../utils/cli';
 import { getClientType, getOutputPath, getBaseUrl } from '../../utils/generateClient';
 import * as fs from 'fs';
@@ -8,12 +7,12 @@ const { execSync } = require('child_process');
 export default class GenerateClientRest extends Command {
   static description = `Generates a REST API client library for Conduit'S REST API`;
   static flags = {
-    'client-type': flags.string({
-      name: 'client-type',
+    'client-type': Flags.string({
+      char: 't',
       description: 'The client type to generate a library for'
     }),
-    'output-path': flags.string({
-      name: 'output-path',
+    'output-path': Flags.string({
+      char: 'p',
       description: 'Path to store archived library in',
     }),
   }
@@ -24,10 +23,10 @@ export default class GenerateClientRest extends Command {
     if (!javaVersion) {
       // This is a temporary solution until we figure out the best way to approach this using Docker
       console.log('Failed to detect Java installation.');
-      cli.exit(-1);
+      CliUx.ux.exit(-1);
     }
     const url = await getBaseUrl(this);
-    const parsedFlags = this.parse(GenerateClientRest).flags;
+    const parsedFlags = (await this.parse(GenerateClientRest)).flags;
     console.log(`Conduit's REST API supports both application and administration requests.`);
     const requestType = (await promptWithOptions(
       'Specify target request type',
@@ -47,7 +46,7 @@ export default class GenerateClientRest extends Command {
       console.log(`\nClient library archive available in: ${zipPath}`);
     } catch (error) {
       console.error(error);
-      cli.exit(-1);
+      CliUx.ux.exit(-1);
     }
   }
 
@@ -69,7 +68,7 @@ export default class GenerateClientRest extends Command {
         .toString().split(',');
     } catch (error) {
       console.error(error);
-      cli.exit(-1);
+      CliUx.ux.exit(-1);
     }
   }
 

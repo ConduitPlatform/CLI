@@ -10,9 +10,8 @@ import { getPort, portNumbers } from '../../utils/getPort';
 import { Docker } from '../../docker/Docker';
 import DemoStart from './start';
 import DemoCleanup from './cleanup';
-import { Command, flags } from '@oclif/command';
+import { Command, Flags, CliUx } from '@oclif/core';
 import axios from 'axios';
-import cli from 'cli-ux';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -109,7 +108,7 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
 export default class DemoSetup extends Command {
   static description = 'Bootstraps a local Conduit demo deployment with minimal configuration';
   static flags = {
-    config: flags.boolean({
+    config: Flags.boolean({
       description: 'Enable manual deployment configuration',
     }),
   };
@@ -127,7 +126,7 @@ export default class DemoSetup extends Command {
   }
 
   async run() {
-    const userConfiguration = this.parse(DemoSetup).flags.config;
+    const userConfiguration = (await this.parse(DemoSetup)).flags.config;
 
     // Handle Existing Demo Deployments
     if (await demoIsDeployed(this)) {
@@ -164,10 +163,10 @@ export default class DemoSetup extends Command {
     let latestConduitTag = (this.conduitTags)[0];
     let latestConduitUiTag = (this.conduitUiTags)[0];
     while (!this.conduitTags.includes(this.selectedConduitTag)) {
-      this.selectedConduitTag = await cli.prompt('Specify your desired Conduit version', { default: latestConduitTag });
+      this.selectedConduitTag = await CliUx.ux.prompt('Specify your desired Conduit version', { default: latestConduitTag });
     }
     while (!this.conduitUiTags.includes(this.selectedConduitUiTag)) {
-      this.selectedConduitUiTag = await cli.prompt('Specify your desired Conduit UI version', { default: latestConduitUiTag });
+      this.selectedConduitUiTag = await CliUx.ux.prompt('Specify your desired Conduit UI version', { default: latestConduitUiTag });
     }
 
     // Select Modules

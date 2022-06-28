@@ -1,4 +1,4 @@
-import cli from 'cli-ux';
+import { CliUx } from '@oclif/core';
 
 export async function booleanPrompt(
   message: string,
@@ -11,7 +11,7 @@ export async function booleanPrompt(
   }
   let res: 'yes' | 'y' | 'no' | 'n' | '' = '';
   while (!['yes', 'y', 'no', 'n'].includes(res)) {
-    res = (await cli.prompt(`${message} (yes/no)`, { ...(defaultValue && { default: defaultValue }) })).toLowerCase();
+    res = (await CliUx.ux.prompt(`${message} (yes/no)`, { ...(defaultValue && { default: defaultValue }) })).toLowerCase();
   }
   return res === 'yes' || res === 'y';
 }
@@ -28,14 +28,14 @@ export async function promptWithOptions(
     return defaultValue;
   }
   if (defaultValue && !choices.includes(defaultValue)) {
-    cli.error(
+    CliUx.ux.error(
       `defaultValue: ${defaultValue} is not contained in choices array: ${choices}`,
       { exit: -1 },
     )
   }
   let res: string = '';
   while (!choices.includes(res)) {
-    res = await cli.prompt(
+    res = await CliUx.ux.prompt(
       `${message} (options: ${choices.join(', ')})`,
       { ...(defaultValue && { default: defaultValue }) },
     );

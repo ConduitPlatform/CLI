@@ -1,6 +1,5 @@
-import { Command, flags } from '@oclif/command';
+import { Command, Flags, CliUx } from '@oclif/core';
 import { generate } from '@graphql-codegen/cli';
-import cli from 'cli-ux';
 import { isEmpty } from 'lodash';
 import { Requests } from '../../http/http';
 import { booleanPrompt } from '../../utils/cli';
@@ -22,12 +21,12 @@ type CONFIG_OPTIONS_REACT_APOLLO_T =
 export default class GenerateClientGraphql extends Command {
   static description = `Generates a GraphQL client library for Conduit's GraphQL API`;
   static flags = {
-    'client-type': flags.string({
-      name: 'client-type',
+    'client-type': Flags.string({
+      char: 't',
       description: 'The client type to generate a library for'
     }),
-    'output-path': flags.string({
-      name: 'output-path',
+    'output-path': Flags.string({
+      char: 'p',
       description: 'Path to store archived library in',
     }),
   }
@@ -51,14 +50,14 @@ export default class GenerateClientGraphql extends Command {
 
   async run() {
     const url = await getBaseUrl(this);
-    const parsedFlags = this.parse(GenerateClientGraphql).flags;
-    cli.action.start('Recovering credentials');
+    const parsedFlags = (await this.parse(GenerateClientGraphql)).flags;
+    CliUx.ux.action.start('Recovering credentials');
     let requestClient: Requests;
     try {
       requestClient = await getRequestClient(this);
-      cli.action.stop('Done');
+      CliUx.ux.action.stop('Done');
     } catch (e) {
-      cli.action.stop('Failed to recover');
+      CliUx.ux.action.stop('Failed to recover');
       return;
     }
     let headers = {};
@@ -89,7 +88,7 @@ export default class GenerateClientGraphql extends Command {
       console.log(`\nClient library archive available in: ${libPath}`);
     } catch (error) {
       console.error(error);
-      cli.exit(-1);
+      CliUx.ux.exit(-1);
     }
   }
 
@@ -100,7 +99,7 @@ export default class GenerateClientGraphql extends Command {
     }
     if (clientType === 'react-apollo') {
       for (const opt of this.reactApolloConfigOptions) {
-        this.genConfig[opt] = await cli.prompt(opt);
+        this.genConfig[opt] = await CliUx.ux.prompt(opt);
       }
     }
   }
@@ -131,7 +130,7 @@ export default class GenerateClientGraphql extends Command {
         return ['typescript', 'typescript-operations', 'graphql-codegen-svelte-apollo'];
       default:
         console.error( 'Invalid Plugin');
-        cli.exit(-1);
+        CliUx.ux.exit(-1);
     }
   }
 

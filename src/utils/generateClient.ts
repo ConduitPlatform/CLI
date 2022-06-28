@@ -1,5 +1,4 @@
-import { Command } from '@oclif/command';
-import cli from 'cli-ux';
+import { Command, CliUx } from '@oclif/core';
 import { booleanPrompt } from './cli';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -16,7 +15,7 @@ export async function getClientType(parsedFlags: GenerateClientFlags, supportedC
   while (!supportedClientTypes.includes(clientType)) {
     console.log('\nSupported Client Types:');
     supportedClientTypes.forEach(type => console.log(`- ${type}`));
-    clientType = (await cli.prompt('Specify client type')).toLowerCase();
+    clientType = (await CliUx.ux.prompt('Specify client type')).toLowerCase();
   }
   return clientType as string;
 }
@@ -28,11 +27,11 @@ export async function getOutputPath(
 ) {
   if (apiType === 'rest' && !requestType) {
     console.error('Call to getOutputPath() with REST api type requires a request type');
-    cli.exit(-1);
+    CliUx.ux.exit(-1);
   }
   let outputPath: string | undefined = parsedFlags['output-path'];
   while (!outputPath || !validateDirectoryPath(outputPath)) {
-    outputPath = await cli.prompt('Specify output directory path', { default: process.cwd() });
+    outputPath = await CliUx.ux.prompt('Specify output directory path', { default: process.cwd() });
   }
   let directoryName = `conduit-${apiType}-`;
   if (apiType === 'rest') {

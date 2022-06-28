@@ -1,7 +1,7 @@
 import { Package, PackageConfiguration } from '../../demo/types';
 import { retrieveDemoConfig, getNetworkName } from '../../demo/utils';
 import { Docker } from '../../docker/Docker';
-import { Command } from '@oclif/command';
+import { Command } from '@oclif/core';
 const open = require('open');
 
 export default class DemoStart extends Command {
@@ -31,7 +31,7 @@ export default class DemoStart extends Command {
     }
 
     // Launch Conduit UI
-    await open(`http://localhost:${demoConfiguration.packages['UI'].ports[0]}`);
+    await open(`http://localhost:${demoConfiguration.packages['UI'].ports[0].split(':')[0]}`);
   }
 
   private formatEnv(env: PackageConfiguration['env']) {

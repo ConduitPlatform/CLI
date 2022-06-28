@@ -26,8 +26,8 @@ The CLI to help you when developing conduit.
 $ npm install -g @conduitplatform/conduit-cli
 $ conduit COMMAND
 running command...
-$ conduit (-v|--version|version)
-@conduitplatform/conduit-cli/0.0.2 linux-x64 node-v14.19.0
+$ conduit (--version|-v)
+@conduitplatform/conduit-cli/latest linux-x64 node-v14.19.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -37,98 +37,104 @@ USAGE
 
 # Commands
 <!-- commands -->
-* [`conduit demo:cleanup`](#conduit-democleanup)
-* [`conduit demo:setup`](#conduit-demosetup)
-* [`conduit demo:start`](#conduit-demostart)
-* [`conduit demo:stop`](#conduit-demostop)
-* [`conduit generateClient:graphql`](#conduit-generateclientgraphql)
-* [`conduit generateClient:rest`](#conduit-generateclientrest)
+* [`conduit demo cleanup`](#conduit-demo-cleanup)
+* [`conduit demo setup`](#conduit-demo-setup)
+* [`conduit demo start`](#conduit-demo-start)
+* [`conduit demo stop`](#conduit-demo-stop)
+* [`conduit generateClient graphql`](#conduit-generateclient-graphql)
+* [`conduit generateClient rest`](#conduit-generateclient-rest)
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
 * [`conduit help [COMMAND]`](#conduit-help-command)
 * [`conduit init`](#conduit-init)
 
-## `conduit demo:cleanup`
+## `conduit demo cleanup`
 
 Removes your local Conduit demo deployment
 
 ```
 USAGE
-  $ conduit demo:cleanup
+  $ conduit demo cleanup [--silent]
 
-OPTIONS
+FLAGS
   --silent
+
+DESCRIPTION
+  Removes your local Conduit demo deployment
 ```
 
-_See code: [src/commands/demo/cleanup.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/cleanup.ts)_
-
-## `conduit demo:setup`
+## `conduit demo setup`
 
 Bootstraps a local Conduit demo deployment with minimal configuration
 
 ```
 USAGE
-  $ conduit demo:setup
+  $ conduit demo setup [--config]
 
-OPTIONS
+FLAGS
   --config  Enable manual deployment configuration
+
+DESCRIPTION
+  Bootstraps a local Conduit demo deployment with minimal configuration
 ```
 
-_See code: [src/commands/demo/setup.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/setup.ts)_
-
-## `conduit demo:start`
+## `conduit demo start`
 
 Spins up your local Conduit demo deployment
 
 ```
 USAGE
-  $ conduit demo:start
+  $ conduit demo start
+
+DESCRIPTION
+  Spins up your local Conduit demo deployment
 ```
 
-_See code: [src/commands/demo/start.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/start.ts)_
-
-## `conduit demo:stop`
+## `conduit demo stop`
 
 Terminates your local Conduit demo deployment
 
 ```
 USAGE
-  $ conduit demo:stop
+  $ conduit demo stop [--silent]
 
-OPTIONS
+FLAGS
   --silent
+
+DESCRIPTION
+  Terminates your local Conduit demo deployment
 ```
 
-_See code: [src/commands/demo/stop.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/demo/stop.ts)_
-
-## `conduit generateClient:graphql`
+## `conduit generateClient graphql`
 
 Generates a GraphQL client library for Conduit's GraphQL API
 
 ```
 USAGE
-  $ conduit generateClient:graphql
+  $ conduit generateClient graphql [-t <value>] [-p <value>]
 
-OPTIONS
-  --client-type=client-type  The client type to generate a library for
-  --output-path=output-path  Path to store archived library in
+FLAGS
+  -p, --output-path=<value>  Path to store archived library in
+  -t, --client-type=<value>  The client type to generate a library for
+
+DESCRIPTION
+  Generates a GraphQL client library for Conduit's GraphQL API
 ```
 
-_See code: [src/commands/generateClient/graphql.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/generateClient/graphql.ts)_
-
-## `conduit generateClient:rest`
+## `conduit generateClient rest`
 
 Generates a REST API client library for Conduit'S REST API
 
 ```
 USAGE
-  $ conduit generateClient:rest
+  $ conduit generateClient rest [--client-type <value>] [--output-path <value>]
 
-OPTIONS
-  --client-type=client-type  The client type to generate a library for
-  --output-path=output-path  Path to store archived library in
+FLAGS
+  --client-type=<value>  The client type to generate a library for
+  --output-path=<value>  Path to store archived library in
+
+DESCRIPTION
+  Generates a REST API client library for Conduit'S REST API
 ```
-
-_See code: [src/commands/generateClient/rest.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/generateClient/rest.ts)_
 
 ## `conduit generateSchema [PATH]`
 
@@ -136,12 +142,15 @@ Generate Schema TS files for registered Conduit schemas
 
 ```
 USAGE
-  $ conduit generateSchema [PATH]
+  $ conduit generateSchema [PATH] [-h]
 
-OPTIONS
-  -h, --help  show CLI help
+FLAGS
+  -h, --help  Show CLI help.
 
-EXAMPLE
+DESCRIPTION
+  Generate Schema TS files for registered Conduit schemas
+
+EXAMPLES
   $ conduit generate-schema
   ...
   Generating schemas
@@ -151,20 +160,23 @@ _See code: [src/commands/generateSchema.ts](https://github.com/ConduitPlatform/C
 
 ## `conduit help [COMMAND]`
 
-display help for conduit
+Display help for conduit.
 
 ```
 USAGE
-  $ conduit help [COMMAND]
+  $ conduit help [COMMAND] [-n]
 
 ARGUMENTS
-  COMMAND  command to show help for
+  COMMAND  Command to show help for.
 
-OPTIONS
-  --all  see all commands in CLI
+FLAGS
+  -n, --nested-commands  Include all nested commands in the output.
+
+DESCRIPTION
+  Display help for conduit.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.3.1/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.1.12/src/commands/help.ts)_
 
 ## `conduit init`
 
@@ -172,13 +184,16 @@ Initialize the CLI to communicate with Conduit
 
 ```
 USAGE
-  $ conduit init
+  $ conduit init [-h] [-r]
 
-OPTIONS
-  -h, --help     show CLI help
+FLAGS
+  -h, --help     Show CLI help.
   -r, --relogin  Reuses url and master key from existing configuration
 
-EXAMPLE
+DESCRIPTION
+  Initialize the CLI to communicate with Conduit
+
+EXAMPLES
   $ conduit init
   ...
   Attempting login

@@ -1,6 +1,5 @@
-import { Command, flags } from '@oclif/command';
+import { Command, CliUx } from '@oclif/core';
 import { getRequestClient } from '../utils/requestUtils';
-import cli from 'cli-ux';
 import { Requests } from '../http/http';
 import { generateSchema } from '../generators/Schema/Schema.generator';
 
@@ -14,21 +13,17 @@ Generating schemas
 `,
   ];
 
-  static flags = {
-    help: flags.help({ char: 'h' }),
-  };
-
   static args = [{ name: 'path' }];
 
   async run() {
-    const { args, flags } = this.parse(GenerateSchema);
-    cli.action.start('Recovering credentials');
+    const { args } = await this.parse(GenerateSchema);
+    CliUx.ux.action.start('Recovering credentials');
     let requestClient: Requests;
     try {
       requestClient = await getRequestClient(this);
-      cli.action.stop('Done');
+      CliUx.ux.action.stop('Done');
     } catch (e) {
-      cli.action.stop('Failed to recover');
+      CliUx.ux.action.stop('Failed to recover');
       return;
     }
     if (!args.path) {
@@ -39,10 +34,10 @@ Generating schemas
       count: number;
     } = await requestClient.getSchemasRequest(0, 5000);
     this.log('Found schemas: ', schemas.count);
-    cli.action.start('Generating schemas');
+    CliUx.ux.action.start('Generating schemas');
     for (let i = 0; i < schemas.count; i++) {
       await generateSchema(schemas.schemas[i], args.path);
     }
-    cli.action.stop();
+    CliUx.ux.action.stop();
   }
 }

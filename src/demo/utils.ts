@@ -1,7 +1,7 @@
 import { PackageImage } from './constants';
 import { ConduitPackageConfiguration, Package } from './types';
 import { Docker } from '../docker/Docker';
-import { Command } from '@oclif/command';
+import { Command } from '@oclif/core';
 import { kebabCase } from 'lodash';
 import * as fs from 'fs-extra';
 import * as path from 'path';

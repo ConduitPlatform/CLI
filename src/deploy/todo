@@ -1,0 +1,17 @@
+// Must Do
+- Merge deployment package overrides on top of base package default configuration before running validators
+- Run feature modifications before running validators
+- Pass configuration objects to validators
+- calculate needed packages from deployment manifest
+- sort packages based on deployment package order and dep order
+- generate container names and network names
+- create network
+- implement custom user input dialog scripts
+- ASK FOR NON REQUIRED PACKAGES, PASS THESE ON
+
+// Post-1.0 Todos
+- implement remote registry/fetching
+
+// Future Considerations
+- Deployment Global Validator ?
+- ^major.minor targets ?

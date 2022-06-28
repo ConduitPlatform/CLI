@@ -41,6 +41,10 @@ USAGE
 * [`conduit demo setup`](#conduit-demo-setup)
 * [`conduit demo start`](#conduit-demo-start)
 * [`conduit demo stop`](#conduit-demo-stop)
+* [`conduit deploy`](#conduit-deploy)
+* [`conduit deploy rm`](#conduit-deploy-rm)
+* [`conduit deploy start`](#conduit-deploy-start)
+* [`conduit deploy stop`](#conduit-deploy-stop)
 * [`conduit generateClient graphql`](#conduit-generateclient-graphql)
 * [`conduit generateClient rest`](#conduit-generateclient-rest)
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
@@ -104,6 +108,56 @@ DESCRIPTION
   Terminates your local Conduit demo deployment
 ```
 
+## `conduit deploy`
+
+Creates a new Conduit deployment
+
+```
+USAGE
+  $ conduit deploy
+
+DESCRIPTION
+  Creates a new Conduit deployment
+```
+
+_See code: [dist/commands/deploy/index.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/deploy/index.ts)_
+
+## `conduit deploy rm`
+
+Removes a Conduit deployment
+
+```
+USAGE
+  $ conduit deploy rm
+
+DESCRIPTION
+  Removes a Conduit deployment
+```
+
+## `conduit deploy start`
+
+Removes a Conduit deployment
+
+```
+USAGE
+  $ conduit deploy start
+
+DESCRIPTION
+  Removes a Conduit deployment
+```
+
+## `conduit deploy stop`
+
+Removes a Conduit deployment
+
+```
+USAGE
+  $ conduit deploy stop
+
+DESCRIPTION
+  Removes a Conduit deployment
+```
+
 ## `conduit generateClient graphql`
 
 Generates a GraphQL client library for Conduit's GraphQL API
@@ -126,11 +180,11 @@ Generates a REST API client library for Conduit'S REST API
 
 ```
 USAGE
-  $ conduit generateClient rest [--client-type <value>] [--output-path <value>]
+  $ conduit generateClient rest [-t <value>] [-p <value>]
 
 FLAGS
-  --client-type=<value>  The client type to generate a library for
-  --output-path=<value>  Path to store archived library in
+  -p, --output-path=<value>  Path to store archived library in
+  -t, --client-type=<value>  The client type to generate a library for
 
 DESCRIPTION
   Generates a REST API client library for Conduit'S REST API
@@ -142,10 +196,7 @@ Generate Schema TS files for registered Conduit schemas
 
 ```
 USAGE
-  $ conduit generateSchema [PATH] [-h]
-
-FLAGS
-  -h, --help  Show CLI help.
+  $ conduit generateSchema [PATH]
 
 DESCRIPTION
   Generate Schema TS files for registered Conduit schemas
@@ -184,10 +235,9 @@ Initialize the CLI to communicate with Conduit
 
 ```
 USAGE
-  $ conduit init [-h] [-r]
+  $ conduit init [-r]
 
 FLAGS
-  -h, --help     Show CLI help.
   -r, --relogin  Reuses url and master key from existing configuration
 
 DESCRIPTION

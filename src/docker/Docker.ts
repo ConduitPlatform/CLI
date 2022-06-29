@@ -49,7 +49,7 @@ export class Docker {
     };
     await promisifiedPull(this.docker, repoTag);
   }
-  
+
   async run(
     packageName: Package,
     tag: string,
@@ -66,12 +66,16 @@ export class Docker {
       return;
     }
     if (!silent) console.log(`Running ${packageName}`);
-    console.log(ports);
+    let exposedPorts:any = {};
+    Object.keys(ports).forEach(port => {
+      exposedPorts[`${port}`] = {};
+    });
     await this.docker.createContainer({
       Image: `${getImageName(packageName)}:${tag}`,
       Cmd: [],
       'name': getContainerName(packageName),
       'Env': env ?? [],
+      'ExposedPorts': exposedPorts,
       'HostConfig': {
         'NetworkMode': this.networkName,
         'PortBindings': ports,
@@ -87,7 +91,7 @@ export class Docker {
     });
     await this.start(packageName, true, true);
   }
-  
+
   async start(packageName: Package, silent = false, bypassExistCheck = false) {
     if (!bypassExistCheck) await this.containerExists(packageName, true);
     const isRunning = await this.containerExists(packageName, false, true);
@@ -99,7 +103,7 @@ export class Docker {
     const container = this.docker.getContainer(getContainerName(packageName));
     await container.start();
   }
-  
+
   async stop(packageName: Package, silent = false, bypassExistCheck = false) {
     if (!bypassExistCheck) await this.containerExists(packageName, false);
     const isRunning = await this.containerExists(packageName, false, true);
@@ -111,7 +115,7 @@ export class Docker {
     const container = this.docker.getContainer(getContainerName(packageName));
     await container.stop();
   }
-  
+
   async rm(packageName: Package, silent = false, bypassExistCheck = false) {
     const exists = bypassExistCheck || await this.containerExists(packageName);
     if (exists) {
@@ -119,7 +123,7 @@ export class Docker {
       await this.docker.getContainer(getContainerName(packageName)).remove();
     }
   }
-  
+
   async rmi(packageName: Package, tag: string, silent = false, bypassExistCheck = false) {
     const exists = bypassExistCheck || await this.imageExists(packageName, tag);
     if (exists) {

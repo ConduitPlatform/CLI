@@ -8,6 +8,7 @@ export const PackageImage: Record<Package, Image> = {
   'Core': 'ghcr.io/conduitplatform/conduit',
   'UI': 'ghcr.io/conduitplatform/conduit-ui',
   'Database': 'ghcr.io/conduitplatform/database',
+  'Router': 'ghcr.io/conduitplatform/router',
   'Authentication': 'ghcr.io/conduitplatform/authentication',
   'Chat': 'ghcr.io/conduitplatform/chat',
   'Email': 'ghcr.io/conduitplatform/email',

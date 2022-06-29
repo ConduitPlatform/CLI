@@ -21,10 +21,19 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
       REDIS_HOST: 'conduit-redis',
       REDIS_PORT: '',
       MASTER_KEY: 'M4ST3RK3Y',
-      PORT: '', // HTTP
-      SOCKET_PORT: '',
+      ADMIN_HTTP_PORT: '3030',
+      ADMIN_SOCKET_PORT: '3031',
     },
-    ports: ['55152', '3000', '3001'], // gRPC, HTTP, Sockets
+    ports: ['55152', '3030', '3031'], // gRPC, HTTP, Sockets
+  },
+  'Router': {
+    env: {
+      CONDUIT_SERVER: '',
+      REGISTER_NAME: 'true',
+      CLIENT_HTTP_PORT: '3000',
+      CLIENT_SOCKET_PORT: '3001',
+    },
+    ports: ['3000'],
   },
   'UI': {
     env: {
@@ -114,7 +123,7 @@ export default class DemoSetup extends Command {
   };
 
   private readonly networkName = 'conduit-demo';
-  private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis'];
+  private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis', 'Router'];
   private conduitTags: string[] = [];
   private conduitUiTags: string[] = [];
   private selectedDbEngine: 'mongodb' | 'postgresql' = 'mongodb';
@@ -219,8 +228,8 @@ export default class DemoSetup extends Command {
     this.demoConfiguration.packages['Core'].env = {
       ...this.demoConfiguration.packages['Core'].env,
       REDIS_PORT: this.demoConfiguration.packages['Redis'].ports[0].split(':')[1],
-      PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
-      SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
+      ADMIN_HTTP_PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
+      ADMIN_SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
     };
     this.demoConfiguration.packages['Database'].env = {
       ...this.demoConfiguration.packages['Database'].env,

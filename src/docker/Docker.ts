@@ -66,6 +66,7 @@ export class Docker {
       return;
     }
     if (!silent) console.log(`Running ${packageName}`);
+    console.log(ports);
     await this.docker.createContainer({
       Image: `${getImageName(packageName)}:${tag}`,
       Cmd: [],
@@ -77,7 +78,7 @@ export class Docker {
       },
       'NetworkingConfig': {
         'EndpointsConfig': {
-          'conduit': { 'Aliases': [packageName.toLowerCase()] },
+          [this.networkName]: { 'Aliases': [packageName.toLowerCase()] },
         },
       },
     }).catch((e) => {

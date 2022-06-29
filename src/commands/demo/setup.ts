@@ -4,7 +4,7 @@ import {
   POSTGRES_VERSION,
 } from '../../demo/constants';
 import { getContainerName, getImageName, demoIsDeployed } from '../../demo/utils';
-import { ConduitPackageConfiguration, Package, PackageConfiguration } from '../../demo/types';
+import { ConduitPackageConfiguration, Package, Image, PackageConfiguration } from '../../demo/types';
 import { booleanPrompt, promptWithOptions } from '../../utils/cli';
 import { getPort, portNumbers } from '../../utils/getPort';
 import { Docker } from '../../docker/Docker';
@@ -193,7 +193,20 @@ export default class DemoSetup extends Command {
       false,
     );
     this.selectedPackages.push(dbEngineType === 'mongodb' ? 'Mongo' : 'Postgres');
+
+    // Specify DB Engine Credentials
+    const dbUsername = await CliUx.ux.prompt('Specify database username', { default: 'conduit' });
+    const dbPassword = await CliUx.ux.prompt('Specify database password', { default: 'pass' });
+    if (dbEngineType === 'mongodb') {
+      this.demoConfiguration.packages['Mongo'].env.MONGO_INITDB_ROOT_USERNAME = dbUsername;
+      this.demoConfiguration.packages['Mongo'].env.MONGO_INITDB_ROOT_PASSWORD = dbPassword;
+    } else {
+      this.demoConfiguration.packages['Postgres'].env.POSTGRES_PASSWORD = dbPassword;
+      this.demoConfiguration.packages['Postgres'].env.POSTGRES_USER = dbUsername;
+    }
   }
+
+
 
   private async processConfiguration() {
     this.sortPackages();

@@ -4,7 +4,7 @@ import {
   POSTGRES_VERSION,
 } from '../../demo/constants';
 import { getContainerName, getImageName, demoIsDeployed } from '../../demo/utils';
-import { ConduitPackageConfiguration, Package, Image, PackageConfiguration } from '../../demo/types';
+import { ConduitPackageConfiguration, Package, PackageConfiguration } from '../../demo/types';
 import { booleanPrompt, promptWithOptions } from '../../utils/cli';
 import { getPort, portNumbers } from '../../utils/getPort';
 import { Docker } from '../../docker/Docker';
@@ -96,11 +96,17 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
     ports: ['6379'],
   },
   'Mongo': {
-    env: {},
+    env: {
+      MONGO_INITDB_ROOT_USERNAME: 'conduit',
+      MONGO_INITDB_ROOT_PASSWORD: 'pass',
+    },
     ports: ['27017'],
   },
   'Postgres': {
-    env: {},
+    env: {
+      POSTGRES_USER: 'conduit',
+      POSTGRES_PASSWORD: 'pass',
+    },
     ports: ['5432'],
   },
 }
@@ -206,8 +212,6 @@ export default class DemoSetup extends Command {
     }
   }
 
-
-
   private async processConfiguration() {
     this.sortPackages();
     const docker = new Docker(this.networkName);
@@ -235,12 +239,29 @@ export default class DemoSetup extends Command {
       PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
       SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
     };
+    let dbUsername: string;
+    let dbPassword: string;
+    let dbHost: string;
+    let dbPort: string;
+    let dbDatabase: string;
+    if (this.selectedDbEngine === 'mongodb') {
+      dbUsername = this.demoConfiguration.packages['Mongo'].env.MONGO_INITDB_ROOT_USERNAME;
+      dbPassword = this.demoConfiguration.packages['Mongo'].env.MONGO_INITDB_ROOT_PASSWORD;
+      dbHost = 'conduit-mongo';
+      dbPort = this.demoConfiguration.packages['Mongo'].ports[0].split(':')[1];
+      dbDatabase = ''; // specifying this is trickier for Mongo
+    } else {
+      dbUsername = this.demoConfiguration.packages['Postgres'].env.POSTGRES_USER;
+      dbPassword = this.demoConfiguration.packages['Postgres'].env.POSTGRES_PASSWORD;
+      dbHost = 'conduit-postgres';
+      dbPort = this.demoConfiguration.packages['Postgres'].ports[0].split(':')[1];
+      dbDatabase = 'conduit';
+    }
     this.demoConfiguration.packages['Database'].env = {
       ...this.demoConfiguration.packages['Database'].env,
       DB_TYPE: this.selectedDbEngine,
-      DB_CONN_URI: this.selectedDbEngine === 'mongodb'
-        ? `mongodb://conduit-mongo:${this.demoConfiguration.packages['Mongo'].ports[0].split(':')[1]}`
-        : `postgres://conduit:pass@localhost:${this.demoConfiguration.packages['Postgres'].ports[0]}/conduit`
+      DB_CONN_URI: `${this.selectedDbEngine}://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}`
+        + dbDatabase ? `/${dbDatabase}` : '',
     };
     const conduitGrpcPort = this.demoConfiguration.packages['Core'].ports[0].split(':')[1];
     const conduitHttpPort = this.demoConfiguration.packages['Core'].ports[1].split(':')[1];

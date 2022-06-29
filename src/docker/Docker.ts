@@ -77,7 +77,7 @@ export class Docker {
       },
       'NetworkingConfig': {
         'EndpointsConfig': {
-          'conduit': { 'Aliases': [packageName.toLowerCase()] },
+          [this.networkName]: { 'Aliases': [packageName.toLowerCase()] },
         },
       },
     }).catch((e) => {

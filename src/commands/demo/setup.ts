@@ -271,6 +271,11 @@ export default class DemoSetup extends Command {
         this.demoConfiguration.packages[pkg].env['CONDUIT_SERVER'] = `${getContainerName('Core')}:${conduitGrpcPort}`;
       }
     });
+    // Display Information
+    console.log(`\n\nDatabase Credentials for ${this.selectedDbEngine === 'mongodb' ? 'MongoDB' : 'PostgreSQL'}:`);
+    console.log(`Username:\t${dbUsername}`);
+    console.log(`Password:\t${dbPassword}`);
+    console.log('\n\n');
   }
 
   private sortPackages() {

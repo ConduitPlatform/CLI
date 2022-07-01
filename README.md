@@ -27,7 +27,7 @@ $ npm install -g @conduitplatform/conduit-cli
 $ conduit COMMAND
 running command...
 $ conduit (--version|-v)
-@conduitplatform/conduit-cli/latest linux-x64 node-v14.19.0
+@conduitplatform/conduit-cli/0.0.2 darwin-x64 node-v18.4.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -126,11 +126,11 @@ Generates a REST API client library for Conduit'S REST API
 
 ```
 USAGE
-  $ conduit generateClient rest [--client-type <value>] [--output-path <value>]
+  $ conduit generateClient rest [-t <value>] [-p <value>]
 
 FLAGS
-  --client-type=<value>  The client type to generate a library for
-  --output-path=<value>  Path to store archived library in
+  -p, --output-path=<value>  Path to store archived library in
+  -t, --client-type=<value>  The client type to generate a library for
 
 DESCRIPTION
   Generates a REST API client library for Conduit'S REST API
@@ -142,10 +142,7 @@ Generate Schema TS files for registered Conduit schemas
 
 ```
 USAGE
-  $ conduit generateSchema [PATH] [-h]
-
-FLAGS
-  -h, --help  Show CLI help.
+  $ conduit generateSchema [PATH]
 
 DESCRIPTION
   Generate Schema TS files for registered Conduit schemas
@@ -156,7 +153,7 @@ EXAMPLES
   Generating schemas
 ```
 
-_See code: [src/commands/generateSchema.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/generateSchema.ts)_
+_See code: [dist/commands/generateSchema.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/dist/commands/generateSchema.ts)_
 
 ## `conduit help [COMMAND]`
 
@@ -184,10 +181,9 @@ Initialize the CLI to communicate with Conduit
 
 ```
 USAGE
-  $ conduit init [-h] [-r]
+  $ conduit init [-r]
 
 FLAGS
-  -h, --help     Show CLI help.
   -r, --relogin  Reuses url and master key from existing configuration
 
 DESCRIPTION
@@ -200,7 +196,7 @@ EXAMPLES
   Login Successful!
 ```
 
-_See code: [src/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/main/src/commands/init.ts)_
+_See code: [dist/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/dist/commands/init.ts)_
 <!-- commandsstop -->
 
 #Roadmap

@@ -217,7 +217,6 @@ export default class DemoSetup extends Command {
     console.log('\nSetting up container environment. This may take some time...')
     for (const pkg of this.selectedPackages) {
       const containerName = getContainerName(pkg);
-      // console.log(DEMO_CONFIG[pkg]);
       this.demoConfiguration.packages[pkg] = {
         image: getImageName(pkg),
         tag: pkg === 'Redis' ? REDIS_VERSION

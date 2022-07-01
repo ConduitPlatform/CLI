@@ -269,10 +269,10 @@ export default class DemoSetup extends Command {
       }
     });
     // Display Information
-    console.log(`\n\nDatabase Credentials for ${this.selectedDbEngine === 'mongodb' ? 'MongoDB' : 'PostgreSQL'}:`);
+    console.log(`\nDatabase Credentials for ${this.selectedDbEngine === 'mongodb' ? 'MongoDB' : 'PostgreSQL'}:`);
     console.log(`Username:\t${this.dbUsername}`);
     console.log(`Password:\t${this.dbPassword}`);
-    console.log('\n\n');
+    console.log('\n');
   }
 
   private sortPackages() {

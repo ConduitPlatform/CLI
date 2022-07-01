@@ -127,7 +127,7 @@ export class Docker {
   async rmi(packageName: Package, tag: string, silent = false, bypassExistCheck = false) {
     const exists = bypassExistCheck || await this.imageExists(packageName, tag);
     if (exists) {
-      if (!silent) console.log(`Removing ${packageName} container`)
+      if (!silent) console.log(`Removing ${packageName} image`)
       const repoTag = `${getImageName(packageName)}:${tag}`;
       const repoTagSlim = repoTag.substring(repoTag.lastIndexOf('/') + 1);
       const image = (await this.docker.listImages()).some(img => { return img.RepoTags?.includes(repoTag) })

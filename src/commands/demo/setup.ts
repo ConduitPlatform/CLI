@@ -106,6 +106,7 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
     env: {
       POSTGRES_USER: '',
       POSTGRES_PASSWORD: '',
+      POSTGRES_DB: 'conduit',
     },
     ports: ['5432'],
   },

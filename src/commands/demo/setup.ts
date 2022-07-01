@@ -123,7 +123,7 @@ export default class DemoSetup extends Command {
   private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis'];
   private conduitTags: string[] = [];
   private conduitUiTags: string[] = [];
-  private selectedDbEngine: 'mongodb' | 'postgresql' = 'mongodb';
+  private selectedDbEngine: 'mongodb' | 'postgres' = 'mongodb';
   private selectedConduitTag: string = '';
   private selectedConduitUiTag: string = '';
   private demoConfiguration: ConduitPackageConfiguration = {
@@ -202,6 +202,7 @@ export default class DemoSetup extends Command {
       false,
     );
     this.selectedPackages.push(dbEngineType === 'mongodb' ? 'Mongo' : 'Postgres');
+    this.selectedDbEngine = dbEngineType === 'mongodb' ? 'mongodb' : 'postgres';
 
     // Specify DB Engine Credentials
     this.dbUsername = await CliUx.ux.prompt('Specify database username', { default: 'conduit' });
@@ -250,8 +251,8 @@ export default class DemoSetup extends Command {
       dbHost = 'conduit-postgres';
       dbPort = this.demoConfiguration.packages['Postgres'].ports[0].split(':')[1];
       dbDatabase = 'conduit';
-      this.demoConfiguration.packages['Mongo'].env['POSTGRES_USER'] = this.dbUsername;
-      this.demoConfiguration.packages['Mongo'].env['POSTGRES_PASSWORD'] = this.dbPassword;
+      this.demoConfiguration.packages['Postgres'].env['POSTGRES_USER'] = this.dbUsername;
+      this.demoConfiguration.packages['Postgres'].env['POSTGRES_PASSWORD'] = this.dbPassword;
     }
     this.demoConfiguration.packages['Database'].env = {
       ...this.demoConfiguration.packages['Database'].env,

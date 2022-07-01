@@ -66,7 +66,7 @@ export class Docker {
       return;
     }
     if (!silent) console.log(`Running ${packageName}`);
-    const exposedPorts:any = {};
+    const exposedPorts: {[p: string]: Record<string, unknown>} = {};
     Object.keys(ports).forEach(port => {
       exposedPorts[`${port}`] = {};
     });

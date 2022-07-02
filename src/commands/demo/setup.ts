@@ -96,11 +96,18 @@ const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> 
     ports: ['6379'],
   },
   'Mongo': {
-    env: {},
+    env: {
+      MONGO_INITDB_ROOT_USERNAME: '',
+      MONGO_INITDB_ROOT_PASSWORD: '',
+    },
     ports: ['27017'],
   },
   'Postgres': {
-    env: {},
+    env: {
+      POSTGRES_USER: '',
+      POSTGRES_PASSWORD: '',
+      POSTGRES_DB: 'conduit',
+    },
     ports: ['5432'],
   },
 }
@@ -117,13 +124,16 @@ export default class DemoSetup extends Command {
   private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis'];
   private conduitTags: string[] = [];
   private conduitUiTags: string[] = [];
-  private selectedDbEngine: 'mongodb' | 'postgresql' = 'mongodb';
+  private selectedDbEngine: 'mongodb' | 'postgres' = 'mongodb';
   private selectedConduitTag: string = '';
   private selectedConduitUiTag: string = '';
   private demoConfiguration: ConduitPackageConfiguration = {
     networkName: this.networkName,
     packages: {},
   }
+  private dbUsername: string = 'conduit';
+  private dbPassword: string = 'pass';
+
 
   async run() {
     const userConfiguration = (await this.parse(DemoSetup)).flags.config;
@@ -193,6 +203,11 @@ export default class DemoSetup extends Command {
       false,
     );
     this.selectedPackages.push(dbEngineType === 'mongodb' ? 'Mongo' : 'Postgres');
+    this.selectedDbEngine = dbEngineType === 'mongodb' ? 'mongodb' : 'postgres';
+
+    // Specify DB Engine Credentials
+    this.dbUsername = await CliUx.ux.prompt('Specify database username', { default: 'conduit' });
+    this.dbPassword = await CliUx.ux.prompt('Specify database password', { default: 'pass' });
   }
 
   private async processConfiguration() {
@@ -222,12 +237,28 @@ export default class DemoSetup extends Command {
       PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
       SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
     };
+    let dbHost: string;
+    let dbPort: string;
+    let dbDatabase: string;
+
+    if (this.selectedDbEngine === 'mongodb') {
+      dbHost = 'conduit-mongo';
+      dbPort = this.demoConfiguration.packages['Mongo'].ports[0].split(':')[1];
+      dbDatabase = ''; // specifying this is trickier for Mongo
+      this.demoConfiguration.packages['Mongo'].env['MONGO_INITDB_ROOT_USERNAME'] = this.dbUsername;
+      this.demoConfiguration.packages['Mongo'].env['MONGO_INITDB_ROOT_PASSWORD'] = this.dbPassword;
+    } else {
+      dbHost = 'conduit-postgres';
+      dbPort = this.demoConfiguration.packages['Postgres'].ports[0].split(':')[1];
+      dbDatabase = 'conduit';
+      this.demoConfiguration.packages['Postgres'].env['POSTGRES_USER'] = this.dbUsername;
+      this.demoConfiguration.packages['Postgres'].env['POSTGRES_PASSWORD'] = this.dbPassword;
+    }
     this.demoConfiguration.packages['Database'].env = {
       ...this.demoConfiguration.packages['Database'].env,
       DB_TYPE: this.selectedDbEngine,
-      DB_CONN_URI: this.selectedDbEngine === 'mongodb'
-        ? `mongodb://conduit-mongo:${this.demoConfiguration.packages['Mongo'].ports[0].split(':')[1]}`
-        : `postgres://conduit:pass@localhost:${this.demoConfiguration.packages['Postgres'].ports[0]}/conduit`
+      DB_CONN_URI: `${this.selectedDbEngine}://${this.dbUsername}:${this.dbPassword}@${dbHost}:${dbPort}`
+        + (dbDatabase ? `/${dbDatabase}` : ''),
     };
     const conduitGrpcPort = this.demoConfiguration.packages['Core'].ports[0].split(':')[1];
     const conduitHttpPort = this.demoConfiguration.packages['Core'].ports[1].split(':')[1];
@@ -237,6 +268,11 @@ export default class DemoSetup extends Command {
         this.demoConfiguration.packages[pkg].env['CONDUIT_SERVER'] = `${getContainerName('Core')}:${conduitGrpcPort}`;
       }
     });
+    // Display Information
+    console.log(`\nDatabase Credentials for ${this.selectedDbEngine === 'mongodb' ? 'MongoDB' : 'PostgreSQL'}:`);
+    console.log(`Username:\t${this.dbUsername}`);
+    console.log(`Password:\t${this.dbPassword}`);
+    console.log('\n');
   }
 
   private sortPackages() {

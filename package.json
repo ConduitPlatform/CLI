@@ -77,8 +77,7 @@
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "rm -rf dist && tsc -b && oclif manifest && oclif readme",
-    "test": "echo NO TESTS",
-    "version": "oclif readme && git add README.md"
+    "test": "echo NO TESTS
   },
   "types": "dist/index.d.ts"
 }

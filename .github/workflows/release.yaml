@@ -26,8 +26,6 @@ jobs:
         run: yarn
       - name: bump package version
         run: |
-          git config --global user.email "actions@getconduit.dev"
-          git config --global user.name "CI bot"
           npm version ${{ env.RELEASE_VERSION }}
       - name: actually_publish
         run: npm publish --access public

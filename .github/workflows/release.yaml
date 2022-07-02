@@ -25,7 +25,12 @@ jobs:
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
       - name: bump package version
-        run: npm version ${{ env.RELEASE_VERSION }}
+        run: |
+          git config --global user.email "actions@getconduit.dev"
+          git config --global user.name "CI bot"
+          npm version ${{ env.RELEASE_VERSION }}
+          git commit -am "Bump version to ${{ env.RELEASE_VERSION }}"
+          git push
       - name: actually_publish
         run: npm publish --access public
         env:

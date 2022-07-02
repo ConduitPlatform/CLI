@@ -13,15 +13,17 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
-      - name: Cache dependencies
-        uses: actions/cache@v1
+      - name: Cache yarn dependencies
+        uses: actions/cache@v2
+        id: yarn-cache
         with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: install dependencies
-        run: npm install
+          path: |
+            ${{ steps.yarn-cache-dir-path.outputs.dir }}
+            **/node_modules
+          key: ${GITHUB_REF##*/}-yarn-${{ hashFiles('**/yarn.lock') }}
+      - name: Install packages
+        if: steps.yarn-cache.outputs.cache-hit != 'true'
+        run: yarn
       - name: bump package version
         run: npm version ${{ env.RELEASE_VERSION }}
       - name: actually_publish

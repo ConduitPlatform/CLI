@@ -1,7 +1,12 @@
 on:
-  release:
+  pull_request:
     types:
-      - created
+      - opened
+      - synchronize
+      - reopened
+  push:
+    tags:
+      - "v*"
 jobs:
   release:
     runs-on: ubuntu-20.04
@@ -24,10 +29,19 @@ jobs:
       - name: Install packages
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
-      - name: bump package version
-        run: |
-          npm version ${{ env.RELEASE_VERSION }} --git-tag-version=false
-      - name: actually_publish
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: "${{ secrets.NPM_PUBLISH_TOKEN }}"
+      - run: npx oclif pack tarballs
+      - run: ls ./dist
+#      - name: bump package version
+#        run: |
+#          npm version ${{ env.RELEASE_VERSION }} --git-tag-version=false
+#      - name: actually_publish
+#        run: npm publish --access public
+#        env:
+#          NODE_AUTH_TOKEN: "${{ secrets.NPM_PUBLISH_TOKEN }}"
+#      - uses: "marvinpinto/action-automatic-releases@latest"
+#        with:
+#          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#          prerelease: false
+#          files: |
+#            ./dist/*.tar.gz
+#            ./dist/*.tar.xz

@@ -199,7 +199,7 @@ EXAMPLES
 _See code: [dist/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/dist/commands/init.ts)_
 <!-- commandsstop -->
 
-#Roadmap
+# Roadmap
 * Support more operations (ex. boilerplate code generation)
 * Change generator functions to use a proper engine
 * Support more languages for code generation

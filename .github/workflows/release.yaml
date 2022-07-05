@@ -29,7 +29,7 @@ jobs:
       - name: Install packages
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
-      - run: npx oclif pack tarballs
+      - run: npx oclif pack tarballs --no-xz
       - run: ls ./dist
 #      - name: bump package version
 #        run: |

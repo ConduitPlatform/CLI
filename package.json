@@ -36,7 +36,22 @@
     "@types/lodash": "^4.14.182",
     "@types/node": "14",
     "ts-node": "^8",
-    "typescript": "~4.2.0"
+    "typescript": "~4.2.0",
+    "@commitlint/cli": "^16.1.0",
+    "@commitlint/config-conventional": "^16.0.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "standard-version": "^9.3.0",
+    "prettier": "^2.2.1",
+    "lint-staged": ">=10",
+    "husky": "^7.0.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.ts": "prettier --write"
   },
   "engines": {
     "node": ">=14"
@@ -74,7 +89,9 @@
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "rm -rf dist && tsc -b && oclif manifest && oclif readme",
-    "test": "echo NO TESTS"
+    "test": "echo NO TESTS",
+    "release": "standard-version",
+    "prepare": "husky install"
   },
   "types": "dist/index.d.ts"
 }

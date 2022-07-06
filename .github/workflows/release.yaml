@@ -1,7 +1,7 @@
 on:
-  release:
-    types:
-      - created
+  push:
+    tags:
+      - "v*"
 jobs:
   release:
     runs-on: ubuntu-20.04
@@ -31,3 +31,10 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: "${{ secrets.NPM_PUBLISH_TOKEN }}"
+      - run: npx oclif pack tarballs --no-xz
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            ./dist/*.tar.gz   

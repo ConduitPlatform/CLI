@@ -5,6 +5,7 @@ import {
 } from '../../demo/constants';
 import { getContainerName, getImageName, demoIsDeployed } from '../../demo/utils';
 import { ConduitPackageConfiguration, Package, PackageConfiguration } from '../../demo/types';
+import { getDefaultConfiguration } from '../../demo/baseConfig';
 import { booleanPrompt, promptWithOptions } from '../../utils/cli';
 import { getPort, portNumbers } from '../../utils/getPort';
 import { Docker } from '../../docker/Docker';
@@ -15,103 +16,6 @@ import axios from 'axios';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
-const DEMO_CONFIG: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> } = {
-  'Core': {
-    env: {
-      REDIS_HOST: 'conduit-redis',
-      REDIS_PORT: '',
-      MASTER_KEY: 'M4ST3RK3Y',
-      PORT: '', // HTTP
-      SOCKET_PORT: '',
-    },
-    ports: ['55152', '3000', '3001'], // gRPC, HTTP, Sockets
-  },
-  'UI': {
-    env: {
-      CONDUIT_URL: '',
-      MASTER_KEY: 'M4ST3RK3Y',
-    },
-    ports: ['8080'],
-  },
-  'Database': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-      DB_TYPE: '',
-      DB_CONN_URI: '',
-    },
-    ports: [],
-  },
-  'Authentication': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-    },
-    ports: [],
-  },
-  'Chat': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-    },
-    ports: [],
-  },
-  'Email': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-    },
-    ports: [],
-  },
-  'Forms': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-    },
-    ports: [],
-  },
-  'PushNotifications': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-    },
-    ports: [],
-  },
-  'SMS': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-    },
-    ports: [],
-  },
-  'Storage': {
-    env: {
-      CONDUIT_SERVER: '',
-      REGISTER_NAME: 'true',
-    },
-    ports: [],
-  },
-  'Redis': {
-    env: {},
-    ports: ['6379'],
-  },
-  'Mongo': {
-    env: {
-      MONGO_INITDB_ROOT_USERNAME: '',
-      MONGO_INITDB_ROOT_PASSWORD: '',
-    },
-    ports: ['27017'],
-  },
-  'Postgres': {
-    env: {
-      POSTGRES_USER: '',
-      POSTGRES_PASSWORD: '',
-      POSTGRES_DB: 'conduit',
-    },
-    ports: ['5432'],
-  },
-}
-
 export default class DemoSetup extends Command {
   static description = 'Bootstraps a local Conduit demo deployment with minimal configuration';
   static flags = {
@@ -121,7 +25,9 @@ export default class DemoSetup extends Command {
   };
 
   private readonly networkName = 'conduit-demo';
-  private selectedPackages: Package[] = ['Core', 'UI', 'Database', 'Authentication', 'Redis'];
+  private selectedPackages: Package[] = [];
+  private defaultPackageConfiguration: { [key: string]: Pick<PackageConfiguration, 'env' | 'ports'> } = {};
+  private legacyMode: boolean = false; // < v0.14
   private conduitTags: string[] = [];
   private conduitUiTags: string[] = [];
   private selectedDbEngine: 'mongodb' | 'postgres' = 'mongodb';
@@ -159,7 +65,10 @@ export default class DemoSetup extends Command {
     } else {
       this.selectedConduitTag = this.conduitTags[0];
       this.selectedConduitUiTag = this.conduitUiTags[0];
-      this.selectedPackages.push('Mongo');
+      const { packageConfiguration, defaultPackages } = getDefaultConfiguration(this.selectedConduitTag);
+      this.defaultPackageConfiguration = packageConfiguration;
+      this.selectedDbEngine = 'mongodb';
+      this.selectedPackages = defaultPackages.concat('Mongo');
     }
     await this.processConfiguration();
     await this.storeDemoConfig(this);
@@ -173,11 +82,21 @@ export default class DemoSetup extends Command {
     let latestConduitTag = (this.conduitTags)[0];
     let latestConduitUiTag = (this.conduitUiTags)[0];
     while (!this.conduitTags.includes(this.selectedConduitTag)) {
-      this.selectedConduitTag = await CliUx.ux.prompt('Specify your desired Conduit version', { default: latestConduitTag });
+      this.selectedConduitTag = await CliUx.ux.prompt(
+        'Specify your desired Conduit version',
+        { default: latestConduitTag },
+      );
     }
     while (!this.conduitUiTags.includes(this.selectedConduitUiTag)) {
-      this.selectedConduitUiTag = await CliUx.ux.prompt('Specify your desired Conduit UI version', { default: latestConduitUiTag });
+      this.selectedConduitUiTag = await CliUx.ux.prompt(
+        'Specify your desired Conduit UI version',
+        { default: latestConduitUiTag },
+      );
     }
+    const { packageConfiguration, defaultPackages, legacyMode } = getDefaultConfiguration(this.selectedConduitTag);
+    this.defaultPackageConfiguration = packageConfiguration;
+    this.selectedPackages = defaultPackages;
+    this.legacyMode = legacyMode;
 
     // Select Modules
     const nonModules: Package[] = ['Core', 'UI', 'Redis', 'Mongo', 'Postgres'];
@@ -186,7 +105,7 @@ export default class DemoSetup extends Command {
     console.log(modules.join(', '));
     const chooseExtraModules = await booleanPrompt('\nSpecify additional modules?', 'no');
     if (chooseExtraModules) {
-      const availableExtras = Object.keys(DEMO_CONFIG).filter(
+      const availableExtras = Object.keys(this.defaultPackageConfiguration).filter(
         pkg => !this.selectedPackages.includes(pkg as Package) && !nonModules.includes(pkg as Package)
       ) as Package[];
       for (const pkg of availableExtras) {
@@ -218,15 +137,17 @@ export default class DemoSetup extends Command {
     for (const pkg of this.selectedPackages) {
       const containerName = getContainerName(pkg);
       this.demoConfiguration.packages[pkg] = {
-        image: getImageName(pkg),
+        image: getImageName(pkg, this.selectedConduitTag),
         tag: pkg === 'Redis' ? REDIS_VERSION
           : pkg === 'Mongo' ? MONGO_VERSION
           : pkg === 'Postgres' ? POSTGRES_VERSION
           : pkg === 'UI' ? this.selectedConduitUiTag
           : this.selectedConduitTag,
         containerName: containerName,
-        env: DEMO_CONFIG[pkg].env,
-        ports: DEMO_CONFIG[pkg].ports.length > 0 ? await this.getServicePortBindings(DEMO_CONFIG[pkg].ports) : [],
+        env: this.defaultPackageConfiguration[pkg].env,
+        ports: this.defaultPackageConfiguration[pkg].ports.length > 0
+          ? await this.getServicePortBindings(this.defaultPackageConfiguration[pkg].ports)
+          : [],
       };
       await docker.pull(pkg, this.demoConfiguration.packages[pkg]!.tag);
     }
@@ -234,13 +155,28 @@ export default class DemoSetup extends Command {
     this.demoConfiguration.packages['Core'].env = {
       ...this.demoConfiguration.packages['Core'].env,
       REDIS_PORT: this.demoConfiguration.packages['Redis'].ports[0].split(':')[1],
-      PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
-      SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
     };
+    if (!this.legacyMode) {
+      this.demoConfiguration.packages['Core'].env = {
+        ...this.demoConfiguration.packages['Core'].env,
+        ADMIN_HTTP_PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
+        ADMIN_SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
+      }
+      this.demoConfiguration.packages['Router'].env = {
+        ...this.demoConfiguration.packages['Router'].env,
+        CLIENT_HTTP_PORT: this.demoConfiguration.packages['Router'].ports[0].split(':')[1],
+        CLIENT_SOCKET_PORT: this.demoConfiguration.packages['Router'].ports[1].split(':')[1],
+      }
+    } else {
+      this.demoConfiguration.packages['Core'].env = {
+        ...this.demoConfiguration.packages['Core'].env,
+        PORT: this.demoConfiguration.packages['Core'].ports[1].split(':')[1],
+        SOCKET_PORT: this.demoConfiguration.packages['Core'].ports[2].split(':')[1],
+      }
+    }
     let dbHost: string;
     let dbPort: string;
     let dbDatabase: string;
-
     if (this.selectedDbEngine === 'mongodb') {
       dbHost = 'conduit-mongo';
       dbPort = this.demoConfiguration.packages['Mongo'].ports[0].split(':')[1];
@@ -265,7 +201,8 @@ export default class DemoSetup extends Command {
     this.demoConfiguration.packages['UI'].env['CONDUIT_URL'] = `http://localhost:${conduitHttpPort}`;
     Object.keys(this.demoConfiguration.packages).forEach(pkg => {
       if (this.demoConfiguration.packages[pkg].env.hasOwnProperty('CONDUIT_SERVER')) {
-        this.demoConfiguration.packages[pkg].env['CONDUIT_SERVER'] = `${getContainerName('Core')}:${conduitGrpcPort}`;
+        this.demoConfiguration.packages[pkg].env['CONDUIT_SERVER'] =
+          `${getContainerName('Core')}:${conduitGrpcPort}`;
       }
     });
     // Display Information
@@ -314,7 +251,7 @@ export default class DemoSetup extends Command {
     releases.sort().reverse();
     rcReleases.sort().reverse();
     releases.push(...rcReleases);
-    releases.push('latest');
+    releases.push('dev');
     return releases;
   }
 

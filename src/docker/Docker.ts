@@ -32,7 +32,7 @@ export class Docker {
   }
 
   async pull(packageName: Package, tag: string) {
-    const repoTag = `${getImageName(packageName)}:${tag}`;
+    const repoTag = `${getImageName(packageName, tag)}:${tag}`;
     if (await this.imageExists(packageName, tag)) return;
     console.log(`Pulling ${repoTag}...`);
     const promisifiedPull = function(docker: Dockerode, repoTag: string) {
@@ -71,7 +71,7 @@ export class Docker {
       exposedPorts[`${port}`] = {};
     });
     await this.docker.createContainer({
-      Image: `${getImageName(packageName)}:${tag}`,
+      Image: `${getImageName(packageName, tag)}:${tag}`,
       Cmd: [],
       'name': getContainerName(packageName),
       'Env': env ?? [],
@@ -128,7 +128,7 @@ export class Docker {
     const exists = bypassExistCheck || await this.imageExists(packageName, tag);
     if (exists) {
       if (!silent) console.log(`Removing ${packageName} image`)
-      const repoTag = `${getImageName(packageName)}:${tag}`;
+      const repoTag = `${getImageName(packageName, tag)}:${tag}`;
       const repoTagSlim = repoTag.substring(repoTag.lastIndexOf('/') + 1);
       const image = (await this.docker.listImages()).some(img => { return img.RepoTags?.includes(repoTag) })
         ? repoTag : repoTagSlim;
@@ -147,7 +147,7 @@ export class Docker {
   }
 
   async imageExists(packageName: Package, tag: string) {
-    const repoTag = `${getImageName(packageName)}:${tag}`;
+    const repoTag = `${getImageName(packageName, tag)}:${tag}`;
     const repoTagSlim = repoTag.substring(repoTag.lastIndexOf('/') + 1);
     return (await this.docker.listImages())
       .some(img => { return img.RepoTags?.includes(repoTag) || img.RepoTags?.includes(repoTagSlim); });

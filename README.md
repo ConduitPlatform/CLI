@@ -15,6 +15,7 @@ The CLI to help you when developing conduit.
 * [Limitations:](#limitations)
 * [Usage](#usage)
 * [Commands](#commands)
+* [Roadmap](#roadmap)
 <!-- tocstop -->
 
 # Limitations:
@@ -23,11 +24,11 @@ The CLI to help you when developing conduit.
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @conduitplatform/conduit-cli
+$ npm install -g @conduitplatform/cli
 $ conduit COMMAND
 running command...
 $ conduit (--version|-v)
-@conduitplatform/conduit-cli/0.0.2 darwin-x64 node-v18.4.0
+@conduitplatform/cli/0.0.2 linux-x64 node-v14.19.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND

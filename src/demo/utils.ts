@@ -1,5 +1,5 @@
 import { PackageImage } from './constants';
-import { ConduitPackageConfiguration, Package } from './types';
+import { ConduitPackageConfiguration, Package, Image } from './types';
 import { Docker } from '../docker/Docker';
 import { Command } from '@oclif/core';
 import { kebabCase } from 'lodash';
@@ -15,8 +15,14 @@ export function getNetworkName(config: ConduitPackageConfiguration) {
   return config.networkName;
 }
 
-export function getImageName(packageName: Package) {
-  return PackageImage[packageName];
+export function getImageName(packageName: Package, tag: string) {
+  let imageName = PackageImage[packageName];
+  if (imageName.includes('conduitplatform')) {
+    if (tagIsLegacy(tag)) {
+      imageName = imageName.replace('docker.io', 'ghcr.io') as Image;
+    }
+  }
+  return imageName;
 }
 
 export function getContainerName(packageName: Package) {
@@ -39,4 +45,8 @@ export async function demoIsRunning(docker: Docker, config: ConduitPackageConfig
     }
   }
   return false;
+}
+
+export function tagIsLegacy(tag: string) {
+  return (tag.startsWith('v') && parseFloat(tag.slice(1)) < 0.14);
 }

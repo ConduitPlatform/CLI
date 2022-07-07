@@ -5,16 +5,17 @@ export const MONGO_VERSION = 'latest';
 export const POSTGRES_VERSION = 'latest';
 
 export const PackageImage: Record<Package, Image> = {
-  'Core': 'ghcr.io/conduitplatform/conduit',
+  'Core': 'docker.io/conduitplatform/conduit',
   'UI': 'ghcr.io/conduitplatform/conduit-ui',
-  'Database': 'ghcr.io/conduitplatform/database',
-  'Authentication': 'ghcr.io/conduitplatform/authentication',
-  'Chat': 'ghcr.io/conduitplatform/chat',
-  'Email': 'ghcr.io/conduitplatform/email',
-  'Forms': 'ghcr.io/conduitplatform/forms',
-  'PushNotifications': 'ghcr.io/conduitplatform/push-notifications',
-  'SMS': 'ghcr.io/conduitplatform/sms',
-  'Storage': 'ghcr.io/conduitplatform/storage',
+  'Database': 'docker.io/conduitplatform/database',
+  'Router': 'docker.io/conduitplatform/router',
+  'Authentication': 'docker.io/conduitplatform/authentication',
+  'Chat': 'docker.io/conduitplatform/chat',
+  'Email': 'docker.io/conduitplatform/email',
+  'Forms': 'docker.io/conduitplatform/forms',
+  'PushNotifications': 'docker.io/conduitplatform/push-notifications',
+  'SMS': 'docker.io/conduitplatform/sms',
+  'Storage': 'docker.io/conduitplatform/storage',
   // Dependencies
   'Redis': 'docker.io/library/redis',
   'Mongo': 'docker.io/library/mongo',

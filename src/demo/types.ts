@@ -16,7 +16,7 @@ export type Package =
 
 export type Image =
   | 'docker.io/conduitplatform/conduit'
-  | 'ghcr.io/conduitplatform/conduit-ui'
+  | 'docker.io/conduitplatform/conduit-ui'
   | 'docker.io/conduitplatform/database'
   | 'docker.io/conduitplatform/router'
   | 'docker.io/conduitplatform/authentication'

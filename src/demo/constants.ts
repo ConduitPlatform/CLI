@@ -6,7 +6,7 @@ export const POSTGRES_VERSION = 'latest';
 
 export const PackageImage: Record<Package, Image> = {
   'Core': 'docker.io/conduitplatform/conduit',
-  'UI': 'ghcr.io/conduitplatform/conduit-ui',
+  'UI': 'docker.io/conduitplatform/conduit-ui',
   'Database': 'docker.io/conduitplatform/database',
   'Router': 'docker.io/conduitplatform/router',
   'Authentication': 'docker.io/conduitplatform/authentication',

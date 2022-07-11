@@ -15,6 +15,7 @@ The CLI to help you when developing conduit.
 * [Limitations:](#limitations)
 * [Usage](#usage)
 * [Commands](#commands)
+* [Roadmap](#roadmap)
 <!-- tocstop -->
 
 # Limitations:
@@ -23,11 +24,11 @@ The CLI to help you when developing conduit.
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @conduitplatform/conduit-cli
+$ npm install -g @conduitplatform/cli
 $ conduit COMMAND
 running command...
 $ conduit (--version|-v)
-@conduitplatform/conduit-cli/0.0.2 darwin-x64 node-v18.4.0
+@conduitplatform/cli/0.0.2 linux-x64 node-v16.15.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -41,6 +42,10 @@ USAGE
 * [`conduit demo setup`](#conduit-demo-setup)
 * [`conduit demo start`](#conduit-demo-start)
 * [`conduit demo stop`](#conduit-demo-stop)
+* [`conduit deploy rm`](#conduit-deploy-rm)
+* [`conduit deploy setup`](#conduit-deploy-setup)
+* [`conduit deploy start`](#conduit-deploy-start)
+* [`conduit deploy stop`](#conduit-deploy-stop)
 * [`conduit generateClient graphql`](#conduit-generateclient-graphql)
 * [`conduit generateClient rest`](#conduit-generateclient-rest)
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
@@ -102,6 +107,66 @@ FLAGS
 
 DESCRIPTION
   Terminates your local Conduit demo deployment
+```
+
+## `conduit deploy rm`
+
+Bring down a local Conduit deployment
+
+```
+USAGE
+  $ conduit deploy rm [-t <value>]
+
+FLAGS
+  -t, --target=<value>  Specify target deployment
+
+DESCRIPTION
+  Bring down a local Conduit deployment
+```
+
+## `conduit deploy setup`
+
+Bootstraps a local Conduit deployment
+
+```
+USAGE
+  $ conduit deploy setup [--config]
+
+FLAGS
+  --config  Enable manual deployment configuration
+
+DESCRIPTION
+  Bootstraps a local Conduit deployment
+```
+
+## `conduit deploy start`
+
+Bring up a local Conduit deployment
+
+```
+USAGE
+  $ conduit deploy start [-t <value>]
+
+FLAGS
+  -t, --target=<value>  Specify target deployment
+
+DESCRIPTION
+  Bring up a local Conduit deployment
+```
+
+## `conduit deploy stop`
+
+Bring down a local Conduit deployment
+
+```
+USAGE
+  $ conduit deploy stop [-t <value>]
+
+FLAGS
+  -t, --target=<value>  Specify target deployment
+
+DESCRIPTION
+  Bring down a local Conduit deployment
 ```
 
 ## `conduit generateClient graphql`

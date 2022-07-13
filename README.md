@@ -38,10 +38,6 @@ USAGE
 
 # Commands
 <!-- commands -->
-* [`conduit demo cleanup`](#conduit-demo-cleanup)
-* [`conduit demo setup`](#conduit-demo-setup)
-* [`conduit demo start`](#conduit-demo-start)
-* [`conduit demo stop`](#conduit-demo-stop)
 * [`conduit deploy rm`](#conduit-deploy-rm)
 * [`conduit deploy setup`](#conduit-deploy-setup)
 * [`conduit deploy start`](#conduit-deploy-start)
@@ -51,63 +47,6 @@ USAGE
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
 * [`conduit help [COMMAND]`](#conduit-help-command)
 * [`conduit init`](#conduit-init)
-
-## `conduit demo cleanup`
-
-Removes your local Conduit demo deployment
-
-```
-USAGE
-  $ conduit demo cleanup [--silent]
-
-FLAGS
-  --silent
-
-DESCRIPTION
-  Removes your local Conduit demo deployment
-```
-
-## `conduit demo setup`
-
-Bootstraps a local Conduit demo deployment with minimal configuration
-
-```
-USAGE
-  $ conduit demo setup [--config]
-
-FLAGS
-  --config  Enable manual deployment configuration
-
-DESCRIPTION
-  Bootstraps a local Conduit demo deployment with minimal configuration
-```
-
-## `conduit demo start`
-
-Spins up your local Conduit demo deployment
-
-```
-USAGE
-  $ conduit demo start
-
-DESCRIPTION
-  Spins up your local Conduit demo deployment
-```
-
-## `conduit demo stop`
-
-Terminates your local Conduit demo deployment
-
-```
-USAGE
-  $ conduit demo stop [--silent]
-
-FLAGS
-  --silent
-
-DESCRIPTION
-  Terminates your local Conduit demo deployment
-```
 
 ## `conduit deploy rm`
 

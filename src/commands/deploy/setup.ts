@@ -41,7 +41,7 @@ export class DeploySetup extends Command {
         this.selectedTag = await CliUx.ux.prompt('Specify your desired Conduit version', {
           default: this.conduitTags[0],
         });
-        if (!this.conduitTags.includes(this.selectedTag) && this.selectedTag !== 'dev') {
+        if (!this.conduitTags.includes(this.selectedTag)) {
           CliUx.ux.log(
             `Please choose a valid target tag. Example: ${this.conduitTags[0]}\n`,
           );
@@ -72,12 +72,7 @@ export class DeploySetup extends Command {
       this.selectedTag,
     );
     const tagPrefix = this.selectedTag.slice(1).split('.').slice(0, 2).join('.');
-    if (this.selectedTag === 'dev') {
-      manifestUrl =
-        'https://raw.githubusercontent.com/ConduitPlatform/Conduit/main/docker/docker-compose.yml';
-      envUrl =
-        'https://raw.githubusercontent.com/ConduitPlatform/Conduit/main/docker/.env';
-    } else if (!isNaN(parseFloat(tagPrefix)) && parseFloat(tagPrefix) < 0.15) {
+    if (!isNaN(parseFloat(tagPrefix)) && parseFloat(tagPrefix) < 0.15) {
       const targetBranch = `v${tagPrefix}.x`;
       manifestUrl = `https://raw.githubusercontent.com/ConduitPlatform/Conduit/${targetBranch}/docker/docker-compose.yml`;
       envUrl = `https://raw.githubusercontent.com/ConduitPlatform/Conduit/${targetBranch}/docker/.env`;

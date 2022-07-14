@@ -2,13 +2,9 @@ import { Command, Flags, CliUx } from '@oclif/core';
 import dockerCompose from 'docker-compose';
 import { DeploymentConfiguration } from '../../deploy/types';
 import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
-import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import * as open from 'open';
-
-// TODO:
-// - Merge envs with user config
 
 export class DeployStart extends Command {
   static description = 'Bring up a local Conduit deployment';
@@ -61,11 +57,7 @@ export class DeployStart extends Command {
         CliUx.ux.error(err.message);
         CliUx.ux.exit(-1);
       });
-    // Workarounds
-    // if (targetTag.startsWith('v0.10')) {
-    //   // Stop and Restart it...
-    // }
     // Launch Conduit UI
-    await open('http://localhost:8080'); // TODO: Bring up UI port env in compose.yml
+    await open('http://localhost:8080');
   }
 }

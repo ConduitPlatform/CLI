@@ -162,7 +162,9 @@ export class DeploySetup extends Command {
     if (this.deploymentConfig.modules.includes('postgres')) {
       this.deploymentConfig.environment.DB_CONN_URI =
         'postgres://conduit-postgres:5432/conduit';
-      this.deploymentConfig.environment.DB_TYPE = 'postgres';
+      this.deploymentConfig.environment.DB_TYPE = this.selectedTag.startsWith('v0.11')
+        ? 'postgres'
+        : 'sql';
       this.deploymentConfig.environment.DB_TYPE = '5432';
     }
   }

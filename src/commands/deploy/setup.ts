@@ -146,7 +146,7 @@ export class DeploySetup extends Command {
           `Select database engine type`,
           ['mongodb', 'postgres'],
           'mongodb',
-          true,
+          false,
         ),
       );
     }

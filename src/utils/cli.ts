@@ -33,19 +33,21 @@ export async function promptWithOptions(
       throw new Error('Cannot set silent to true without a default value');
     return defaultValue;
   }
-  // TODO: This is actually caps sensitive
   if (defaultValue && !choices.includes(defaultValue)) {
     CliUx.ux.error(
       `defaultValue: ${defaultValue} is not contained in choices array: ${choices}`,
       { exit: -1 },
     );
   }
+  const _choices: Map<string, string> = new Map(); // formatted -> original
+  choices.forEach(choice => {
+    _choices.set(choice.toLowerCase(), choice);
+  });
   let res: string = '';
-  while (!choices.includes(res)) {
+  while (!Array.from(_choices.keys()).includes(capsSensitive ? res : res.toLowerCase())) {
     res = await CliUx.ux.prompt(`${message} (options: ${choices.join(', ')})`, {
       ...(defaultValue && { default: defaultValue }),
     });
   }
-  // TODO: This should return the original target if caps insensitive
-  return capsSensitive ? res : res.toLowerCase();
+  return _choices.get(res)!;
 }

@@ -18,7 +18,7 @@ export class DeployRemove extends Command {
     // Select Target Deployment
     let target = (await this.parse(DeployRemove)).flags.target;
     if (!target) {
-      const availableDeployments = listLocalDeployments(this);
+      const availableDeployments = await listLocalDeployments(this);
       if (availableDeployments.length === 0) {
         CliUx.ux.log('No deployments available.');
         CliUx.ux.exit(0);

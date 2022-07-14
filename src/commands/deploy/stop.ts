@@ -15,10 +15,9 @@ export class DeployStop extends Command {
     // Select Target Deployment
     let target = (await this.parse(DeployStop)).flags.target;
     if (!target) {
-      const availableDeployments = listLocalDeployments(this);
+      const availableDeployments = await listLocalDeployments(this, true);
       if (availableDeployments.length === 0) {
-        // TODO: This should check for running deployments instead
-        CliUx.ux.log('No deployments available.');
+        CliUx.ux.log('No running deployments available.');
         CliUx.ux.exit(0);
       }
       CliUx.ux.log('Available Deployment Targets:');

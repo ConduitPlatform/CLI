@@ -25,7 +25,7 @@ export class DeployStart extends Command {
     // Select Target Deployment
     let target = (await this.parse(DeployStart)).flags.target;
     if (!target) {
-      const availableDeployments = listLocalDeployments(this);
+      const availableDeployments = await listLocalDeployments(this);
       CliUx.ux.log('Available Deployment Targets:');
       availableDeployments.forEach(target => CliUx.ux.log(`- ${target}`));
       do {

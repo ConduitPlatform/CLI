@@ -161,11 +161,11 @@ export class DeploySetup extends Command {
     // TODO: Parse .env file and prompt for overrides
     if (this.deploymentConfig.modules.includes('postgres')) {
       this.deploymentConfig.environment.DB_CONN_URI =
-        'postgres://conduit-postgres:5432/conduit';
+        'postgres://conduit:pass@conduit-postgres:5432/conduit';
       this.deploymentConfig.environment.DB_TYPE = this.selectedTag.startsWith('v0.11')
-        ? 'postgres'
-        : 'sql';
-      this.deploymentConfig.environment.DB_TYPE = '5432';
+        ? 'sql'
+        : 'postgres';
+      this.deploymentConfig.environment.DB_PORT = '5432';
     }
   }
 

@@ -1,4 +1,5 @@
 import { Command, Flags, CliUx } from '@oclif/core';
+import { DeployStart } from './start';
 import { DeploymentConfiguration } from '../../deploy/types';
 import { booleanPrompt, promptWithOptions } from '../../utils/cli';
 import axios from 'axios';
@@ -61,6 +62,8 @@ export class DeploySetup extends Command {
     await this.configureEnvironment();
     // Store User Configuration
     await this.storeDeploymentConfig();
+    // Start Deployment
+    await DeployStart.run(['--target', this.selectedTag]);
   }
 
   private async pullComposeFiles() {

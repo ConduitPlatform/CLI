@@ -24,9 +24,6 @@ jobs:
       - name: Install packages
         if: steps.yarn-cache.outputs.cache-hit != 'true'
         run: yarn
-      - name: bump package version
-        run: |
-          npm version ${{ env.RELEASE_VERSION }} --git-tag-version=false
       - name: actually_publish
         run: npm publish --access public
         env:

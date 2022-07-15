@@ -15,6 +15,7 @@ The CLI to help you when developing conduit.
 * [Limitations:](#limitations)
 * [Usage](#usage)
 * [Commands](#commands)
+* [Roadmap](#roadmap)
 <!-- tocstop -->
 
 # Limitations:
@@ -23,11 +24,11 @@ The CLI to help you when developing conduit.
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @conduitplatform/conduit-cli
+$ npm install -g @conduitplatform/cli
 $ conduit COMMAND
 running command...
 $ conduit (--version|-v)
-@conduitplatform/conduit-cli/0.0.2 darwin-x64 node-v18.4.0
+@conduitplatform/cli/0.0.2 linux-x64 node-v16.15.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -37,71 +38,74 @@ USAGE
 
 # Commands
 <!-- commands -->
-* [`conduit demo cleanup`](#conduit-demo-cleanup)
-* [`conduit demo setup`](#conduit-demo-setup)
-* [`conduit demo start`](#conduit-demo-start)
-* [`conduit demo stop`](#conduit-demo-stop)
+* [`conduit deploy rm`](#conduit-deploy-rm)
+* [`conduit deploy setup`](#conduit-deploy-setup)
+* [`conduit deploy start`](#conduit-deploy-start)
+* [`conduit deploy stop`](#conduit-deploy-stop)
 * [`conduit generateClient graphql`](#conduit-generateclient-graphql)
 * [`conduit generateClient rest`](#conduit-generateclient-rest)
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
 * [`conduit help [COMMAND]`](#conduit-help-command)
 * [`conduit init`](#conduit-init)
 
-## `conduit demo cleanup`
+## `conduit deploy rm`
 
-Removes your local Conduit demo deployment
+Bring down a local Conduit deployment
 
 ```
 USAGE
-  $ conduit demo cleanup [--silent]
+  $ conduit deploy rm [-t <value>]
 
 FLAGS
-  --silent
+  -t, --target=<value>  Specify target deployment
 
 DESCRIPTION
-  Removes your local Conduit demo deployment
+  Bring down a local Conduit deployment
 ```
 
-## `conduit demo setup`
+## `conduit deploy setup`
 
-Bootstraps a local Conduit demo deployment with minimal configuration
+Bootstraps a local Conduit deployment
 
 ```
 USAGE
-  $ conduit demo setup [--config]
+  $ conduit deploy setup [--config]
 
 FLAGS
   --config  Enable manual deployment configuration
 
 DESCRIPTION
-  Bootstraps a local Conduit demo deployment with minimal configuration
+  Bootstraps a local Conduit deployment
 ```
 
-## `conduit demo start`
+## `conduit deploy start`
 
-Spins up your local Conduit demo deployment
-
-```
-USAGE
-  $ conduit demo start
-
-DESCRIPTION
-  Spins up your local Conduit demo deployment
-```
-
-## `conduit demo stop`
-
-Terminates your local Conduit demo deployment
+Bring up a local Conduit deployment
 
 ```
 USAGE
-  $ conduit demo stop [--silent]
+  $ conduit deploy start [-t <value>]
 
 FLAGS
-  --silent
+  -t, --target=<value>  Specify target deployment
 
 DESCRIPTION
-  Terminates your local Conduit demo deployment
+  Bring up a local Conduit deployment
+```
+
+## `conduit deploy stop`
+
+Bring down a local Conduit deployment
+
+```
+USAGE
+  $ conduit deploy stop [-t <value>]
+
+FLAGS
+  -t, --target=<value>  Specify target deployment
+
+DESCRIPTION
+  Bring down a local Conduit deployment
 ```
 
 ## `conduit generateClient graphql`

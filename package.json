@@ -1,7 +1,7 @@
 {
   "name": "@conduitplatform/cli",
   "description": "The CLI to help you when developing conduit",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "Conduit Team",
   "bin": {
     "conduit": "./bin/run"
@@ -87,8 +87,12 @@
       "identifier": "dev.getconduit.cli"
     },
     "topics": {
-      "deploy": { "description": "Deploy and manage local Conduit instances" },
-      "generateClient": { "description": "Generate client libraries for your Conduit APIs" }
+      "deploy": {
+        "description": "Deploy and manage local Conduit instances"
+      },
+      "generateClient": {
+        "description": "Generate client libraries for your Conduit APIs"
+      }
     }
   },
   "repository": {

@@ -3,14 +3,17 @@ import { booleanPrompt } from './cli';
 import * as fs from 'fs';
 import * as path from 'path';
 import { recoverApiConfig } from './requestUtils';
-import Init from '../commands/init';
+import { Init } from '../commands/init';
 
 export interface GenerateClientFlags {
-  'client-type': string | undefined,
-  'output-path': string | undefined,
+  'client-type': string | undefined;
+  'output-path': string | undefined;
 }
 
-export async function getClientType(parsedFlags: GenerateClientFlags, supportedClientTypes: string[]) {
+export async function getClientType(
+  parsedFlags: GenerateClientFlags,
+  supportedClientTypes: string[],
+) {
   let clientType = parsedFlags['client-type'] ?? '';
   while (!supportedClientTypes.includes(clientType)) {
     console.log('\nSupported Client Types:');
@@ -31,7 +34,9 @@ export async function getOutputPath(
   }
   let outputPath: string | undefined = parsedFlags['output-path'];
   while (!outputPath || !validateDirectoryPath(outputPath)) {
-    outputPath = await CliUx.ux.prompt('Specify output directory path', { default: process.cwd() });
+    outputPath = await CliUx.ux.prompt('Specify output directory path', {
+      default: process.cwd(),
+    });
   }
   let directoryName = `conduit-${apiType}-`;
   if (apiType === 'rest') {
@@ -43,18 +48,19 @@ export async function getOutputPath(
 }
 
 export async function getBaseUrl(command: Command) {
-  const { url } = await recoverApiConfig(command)
-    .catch(async () => {
-      const runInit = await booleanPrompt(
-        'No configuration found. Run init and proceed?', 'yes');
-      if (!runInit) {
-        console.log('Aborting');
-        process.exit(0);
-      }
-      const init = new Init(command.argv, command.config);
-      await init.run();
-      return await recoverApiConfig(command);
-    });
+  const { url } = await recoverApiConfig(command).catch(async () => {
+    const runInit = await booleanPrompt(
+      'No configuration found. Run init and proceed?',
+      'yes',
+    );
+    if (!runInit) {
+      console.log('Aborting');
+      process.exit(0);
+    }
+    const init = new Init(command.argv, command.config);
+    await init.run();
+    return await recoverApiConfig(command);
+  });
   return url;
 }
 

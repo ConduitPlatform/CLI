@@ -75,7 +75,12 @@ export class DeploySetup extends Command {
       this.selectedTag,
     );
     const tagPrefix = this.selectedTag.slice(1).split('.').slice(0, 2).join('.');
-    if (!isNaN(parseFloat(tagPrefix)) && parseFloat(tagPrefix) < 0.15) {
+    if (this.conduitTags[0].startsWith(`v${tagPrefix}`)) {
+      manifestUrl =
+        'https://raw.githubusercontent.com/ConduitPlatform/Conduit/main/docker/docker-compose.yml';
+      envUrl =
+        'https://raw.githubusercontent.com/ConduitPlatform/Conduit/main/docker/.env';
+    } else if (!isNaN(parseFloat(tagPrefix)) && parseFloat(tagPrefix) < 0.15) {
       const targetBranch = `v${tagPrefix}.x`;
       manifestUrl = `https://raw.githubusercontent.com/ConduitPlatform/Conduit/${targetBranch}/docker/docker-compose.yml`;
       envUrl = `https://raw.githubusercontent.com/ConduitPlatform/Conduit/${targetBranch}/docker/.env`;

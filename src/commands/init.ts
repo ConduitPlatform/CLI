@@ -2,7 +2,7 @@ import { Command, Flags, CliUx } from '@oclif/core';
 import { Requests } from '../http/http';
 import { recoverApiConfig, storeConfiguration } from '../utils/requestUtils';
 
-export default class Init extends Command {
+export class Init extends Command {
   static description = 'Initialize the CLI to communicate with Conduit';
 
   static examples = [
@@ -14,7 +14,10 @@ Login Successful!
   ];
 
   static flags = {
-    relogin: Flags.boolean({ char: 'r', description: 'Reuses url and master key from existing configuration' }),
+    relogin: Flags.boolean({
+      char: 'r',
+      description: 'Reuses url and master key from existing configuration',
+    }),
   };
 
   async run() {
@@ -31,7 +34,9 @@ Login Successful!
         url = await CliUx.ux.prompt('Specify the API url of your Conduit installation');
       }
       if (!masterKey) {
-        masterKey = await CliUx.ux.prompt('Add the master key of your Conduit installation');
+        masterKey = await CliUx.ux.prompt(
+          'Add the master key of your Conduit installation',
+        );
       }
       requestInstance = new Requests(this, url, masterKey);
       const pingSuccessful = await requestInstance.httpHealthCheck();

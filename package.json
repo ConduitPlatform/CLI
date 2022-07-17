@@ -85,6 +85,10 @@
     ],
     "macos": {
       "identifier": "dev.getconduit.cli"
+    },
+    "topics": {
+      "deploy": { "description": "Deploy and manage local Conduit instances" },
+      "generateClient": { "description": "Generate client libraries for your Conduit APIs" }
     }
   },
   "repository": {

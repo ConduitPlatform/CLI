@@ -4,18 +4,18 @@ import { getClientType, getOutputPath, getBaseUrl } from '../../utils/generateCl
 import * as fs from 'fs';
 const { execSync } = require('child_process');
 
-export default class GenerateClientRest extends Command {
-  static description = `Generates a REST API client library for Conduit'S REST API`;
+export class GenerateClientRest extends Command {
+  static description = 'Generate client libraries for your Conduit REST APIs';
   static flags = {
     'client-type': Flags.string({
       char: 't',
-      description: 'The client type to generate a library for'
+      description: 'The client type to generate a library for',
     }),
     'output-path': Flags.string({
       char: 'p',
       description: 'Path to store archived library in',
     }),
-  }
+  };
   private supportedClientTypes: string[] = [];
 
   async run() {
@@ -27,7 +27,9 @@ export default class GenerateClientRest extends Command {
     }
     const url = await getBaseUrl(this);
     const parsedFlags = (await this.parse(GenerateClientRest)).flags;
-    console.log(`Conduit's REST API supports both application and administration requests.`);
+    console.log(
+      `Conduit's REST API supports both application and administration requests.`,
+    );
     const requestType = (await promptWithOptions(
       'Specify target request type',
       ['app', 'admin'],
@@ -36,11 +38,11 @@ export default class GenerateClientRest extends Command {
     this.getSupportedClientTypes();
     const clientType = await getClientType(parsedFlags, this.supportedClientTypes);
     const libPath = await getOutputPath(parsedFlags, 'rest', requestType);
-    const inputSpec = (requestType === 'admin') ? 'admin/swagger.json' : 'swagger.json';
+    const inputSpec = requestType === 'admin' ? 'admin/swagger.json' : 'swagger.json';
     try {
       execSync(
         `npx @openapitools/openapi-generator-cli generate \
-        -i ${url}/${inputSpec} -g ${clientType} -o ${libPath} --skip-validate-spec`
+        -i ${url}/${inputSpec} -g ${clientType} -o ${libPath} --skip-validate-spec`,
       );
       const zipPath = await this.convertToZip(libPath);
       console.log(`\nClient library archive available in: ${zipPath}`);
@@ -51,12 +53,12 @@ export default class GenerateClientRest extends Command {
   }
 
   private async convertToZip(libPath: string) {
-    const zipPath = `${libPath}.zip`
+    const zipPath = `${libPath}.zip`;
     execSync(`zip -r ${zipPath} ${libPath}`);
-    fs.rm(libPath, { recursive: true, force: true }, (err) => {
+    fs.rm(libPath, { recursive: true, force: true }, err => {
       if (err) {
-        console.error(err)
-        return
+        console.error(err);
+        return;
       }
     });
     return zipPath;
@@ -64,8 +66,11 @@ export default class GenerateClientRest extends Command {
 
   private getSupportedClientTypes() {
     try {
-      this.supportedClientTypes = execSync('npx @openapitools/openapi-generator-cli list -s')
-        .toString().split(',');
+      this.supportedClientTypes = execSync(
+        'npx @openapitools/openapi-generator-cli list -s',
+      )
+        .toString()
+        .split(',');
     } catch (error) {
       console.error(error);
       CliUx.ux.exit(-1);
@@ -74,7 +79,9 @@ export default class GenerateClientRest extends Command {
 
   private getJavaVersion() {
     try {
-      const javaVersion = execSync('java --version 2> /dev/null').toString().split(' ')[1];
+      const javaVersion = execSync('java --version 2> /dev/null')
+        .toString()
+        .split(' ')[1];
       console.log(javaVersion);
       return javaVersion;
     } catch (error) {

@@ -29,7 +29,7 @@ $ npm install -g @conduitplatform/cli
 $ conduit COMMAND
 running command...
 $ conduit (--version|-v)
-@conduitplatform/cli/0.0.2 linux-x64 node-v16.15.0
+@conduitplatform/cli/0.0.4 linux-x64 node-v16.15.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -66,7 +66,7 @@ DESCRIPTION
 
 ## `conduit deploy setup`
 
-Bootstraps a local Conduit deployment
+Bootstrap a local Conduit deployment
 
 ```
 USAGE
@@ -76,7 +76,7 @@ FLAGS
   --config  Enable manual deployment configuration
 
 DESCRIPTION
-  Bootstraps a local Conduit deployment
+  Bootstrap a local Conduit deployment
 ```
 
 ## `conduit deploy start`
@@ -111,7 +111,7 @@ DESCRIPTION
 
 ## `conduit generateClient graphql`
 
-Generates a GraphQL client library for Conduit's GraphQL API
+Generate a GraphQL client library for Conduit's GraphQL API
 
 ```
 USAGE
@@ -122,12 +122,12 @@ FLAGS
   -t, --client-type=<value>  The client type to generate a library for
 
 DESCRIPTION
-  Generates a GraphQL client library for Conduit's GraphQL API
+  Generate a GraphQL client library for Conduit's GraphQL API
 ```
 
 ## `conduit generateClient rest`
 
-Generates a REST API client library for Conduit'S REST API
+Generate a REST API client library for Conduit'S REST API
 
 ```
 USAGE
@@ -138,7 +138,7 @@ FLAGS
   -t, --client-type=<value>  The client type to generate a library for
 
 DESCRIPTION
-  Generates a REST API client library for Conduit'S REST API
+  Generate a REST API client library for Conduit'S REST API
 ```
 
 ## `conduit generateSchema [PATH]`
@@ -158,7 +158,7 @@ EXAMPLES
   Generating schemas
 ```
 
-_See code: [dist/commands/generateSchema.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/dist/commands/generateSchema.ts)_
+_See code: [dist/commands/generateSchema.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.4/dist/commands/generateSchema.ts)_
 
 ## `conduit help [COMMAND]`
 
@@ -201,7 +201,7 @@ EXAMPLES
   Login Successful!
 ```
 
-_See code: [dist/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.2/dist/commands/init.ts)_
+_See code: [dist/commands/init.ts](https://github.com/ConduitPlatform/CLI/blob/v0.0.4/dist/commands/init.ts)_
 <!-- commandsstop -->
 
 # Roadmap

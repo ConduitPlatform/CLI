@@ -8,7 +8,7 @@ import * as fs from 'fs-extra';
 import * as yaml from 'js-yaml';
 
 export class DeploySetup extends Command {
-  static description = 'Bootstraps a local Conduit deployment';
+  static description = 'Bootstrap a local Conduit deployment';
   static flags = {
     config: Flags.boolean({
       description: 'Enable manual deployment configuration',

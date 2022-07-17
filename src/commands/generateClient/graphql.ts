@@ -14,24 +14,29 @@ type CONFIG_OPTIONS_BASE_T =
   | 'enumsAsTypes'
   | 'fragmentMasking';
 
-type CONFIG_OPTIONS_REACT_APOLLO_T =
-  | 'reactApolloVersion'
-  | 'operationResultSuffix';
+type CONFIG_OPTIONS_REACT_APOLLO_T = 'reactApolloVersion' | 'operationResultSuffix';
 
-export default class GenerateClientGraphql extends Command {
-  static description = `Generates a GraphQL client library for Conduit's GraphQL API`;
+export class GenerateClientGraphql extends Command {
+  static description = 'Generate client libraries for your Conduit GraphQL APIs';
   static flags = {
     'client-type': Flags.string({
       char: 't',
-      description: 'The client type to generate a library for'
+      description: 'The client type to generate a library for',
     }),
     'output-path': Flags.string({
       char: 'p',
       description: 'Path to store archived library in',
     }),
-  }
-  private supportedClientTypes: string[] =
-    ['typescript', 'react', 'react-apollo', 'angular', 'vue-urql', 'vue-apollo', 'svelte'];
+  };
+  private supportedClientTypes: string[] = [
+    'typescript',
+    'react',
+    'react-apollo',
+    'angular',
+    'vue-urql',
+    'vue-apollo',
+    'svelte',
+  ];
   private genConfig: { [field: string]: string | boolean } = {};
   private fileNameSuffix: string = '';
 
@@ -93,7 +98,7 @@ export default class GenerateClientGraphql extends Command {
   }
 
   private async getConfig(clientType: string) {
-    console.log('Configure client library configuration options:')
+    console.log('Configure client library configuration options:');
     for (const opt of this.baseConfigOptions) {
       this.genConfig[opt] = await booleanPrompt(opt);
     }
@@ -129,7 +134,7 @@ export default class GenerateClientGraphql extends Command {
         this.fileNameSuffix = `types.svelte-apollo.${this.fileNameSuffix}.ts`;
         return ['typescript', 'typescript-operations', 'graphql-codegen-svelte-apollo'];
       default:
-        console.error( 'Invalid Plugin');
+        console.error('Invalid Plugin');
         CliUx.ux.exit(-1);
     }
   }

@@ -3,7 +3,7 @@ import { getRequestClient } from '../utils/requestUtils';
 import { Requests } from '../http/http';
 import { generateSchema } from '../generators/Schema/Schema.generator';
 
-export default class GenerateSchema extends Command {
+export class GenerateSchema extends Command {
   static description = 'Generate Schema TS files for registered Conduit schemas';
 
   static examples = [

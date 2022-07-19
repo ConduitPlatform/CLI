@@ -29,7 +29,7 @@ $ npm install -g @conduitplatform/cli
 $ conduit COMMAND
 running command...
 $ conduit (--version|-v)
-@conduitplatform/cli/0.0.5 linux-x64 node-v16.15.0
+@conduitplatform/cli/0.0.6 linux-x64 node-v16.15.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND

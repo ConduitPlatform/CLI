@@ -8,14 +8,18 @@ export async function listLocalDeployments(command: Command, running = false) {
   const deployments = fs.readdirSync(deploymentBasePath).filter(file => {
     return fs.statSync(path.join(deploymentBasePath, file)).isFile();
   });
+  let onlineDeployments: string[];
   if (running) {
+    onlineDeployments = [];
     for (const deployment of deployments) {
-      if (!(await Docker.getInstance().containerIsUp(`conduit-${deployment}`))) {
-        deployments.splice(deployments.indexOf(deployment));
+      if (await Docker.getInstance().containerIsUp(`conduit-${deployment}`)) {
+        onlineDeployments.push(deployment);
       }
     }
+  } else {
+    onlineDeployments = deployments;
   }
-  return deployments;
+  return onlineDeployments;
 }
 
 export function getDeploymentPaths(command: Command, tag: string) {

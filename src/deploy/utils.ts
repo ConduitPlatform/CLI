@@ -2,6 +2,7 @@ import { Command, CliUx } from '@oclif/core';
 import { Docker } from '../docker';
 import * as path from 'path';
 import * as fs from 'fs-extra';
+const { execSync } = require('child_process');
 
 export async function listLocalDeployments(command: Command, running = false) {
   const deploymentBasePath = path.join(command.config.configDir, 'deploy');
@@ -38,4 +39,25 @@ export function getDeploymentPaths(command: Command, tag: string) {
     CliUx.ux.exit(-1);
   }
   return { manifestPath, deploymentPath, composePath, envPath };
+}
+
+export function assertDockerComposeCompat() {
+  try {
+    const composeVersionString = execSync('docker-compose --version', {
+      stdio: [],
+    }).toString();
+    if (composeVersionString.startsWith('docker-compose version')) return;
+  } catch {}
+  let exit = false;
+  try {
+    const output = execSync('docker compose --help', { stdio: [] }).toString();
+    if (output.includes('Available Commands:')) {
+      exit = true;
+      CliUx.ux.log('Docker compose plugin (v2) is not yet supported');
+      CliUx.ux.log('Please install docker-compose (v1) or set up a shell alias for it');
+    }
+  } catch {}
+  if (exit) CliUx.ux.exit(-1);
+  CliUx.ux.log('Please install docker-compose (v1)');
+  CliUx.ux.exit(-1);
 }

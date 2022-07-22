@@ -48,6 +48,13 @@ export function assertDockerComposeCompat() {
     }).toString();
     if (composeVersionString.startsWith('docker-compose version')) return;
   } catch {}
+  try {
+    // Aliased v2
+    const composeVersionString = execSync('docker-compose version', {
+      stdio: [],
+    }).toString();
+    if (composeVersionString.startsWith('Docker Compose version')) return;
+  } catch {}
   let exit = false;
   try {
     const output = execSync('docker compose --help', { stdio: [] }).toString();

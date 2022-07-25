@@ -1,6 +1,10 @@
 import { Command, Flags, CliUx } from '@oclif/core';
 import dockerCompose from 'docker-compose';
-import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
+import {
+  assertDockerComposeCompat,
+  listLocalDeployments,
+  getDeploymentPaths,
+} from '../../deploy/utils';
 import * as fs from 'fs';
 
 export class DeployRemove extends Command {
@@ -15,6 +19,7 @@ export class DeployRemove extends Command {
   private deploymentPath!: string;
 
   async run() {
+    assertDockerComposeCompat();
     // Select Target Deployment
     let target = (await this.parse(DeployRemove)).flags.target;
     if (!target) {

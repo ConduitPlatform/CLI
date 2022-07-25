@@ -1,7 +1,11 @@
 import { Command, Flags, CliUx } from '@oclif/core';
 import dockerCompose from 'docker-compose';
 import { DeploymentConfiguration } from '../../deploy/types';
-import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
+import {
+  assertDockerComposeCompat,
+  listLocalDeployments,
+  getDeploymentPaths,
+} from '../../deploy/utils';
 import * as fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import * as open from 'open';
@@ -18,6 +22,7 @@ export class DeployStart extends Command {
   private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
+    assertDockerComposeCompat();
     // Select Target Deployment
     let target = (await this.parse(DeployStart)).flags.target;
     if (!target) {

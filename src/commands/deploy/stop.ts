@@ -1,6 +1,10 @@
 import { Command, Flags, CliUx } from '@oclif/core';
 import dockerCompose from 'docker-compose';
-import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
+import {
+  assertDockerComposeCompat,
+  listLocalDeployments,
+  getDeploymentPaths,
+} from '../../deploy/utils';
 
 export class DeployStop extends Command {
   static description = 'Bring down a local Conduit deployment';
@@ -12,6 +16,7 @@ export class DeployStop extends Command {
   };
 
   async run() {
+    assertDockerComposeCompat();
     // Select Target Deployment
     let target = (await this.parse(DeployStop)).flags.target;
     if (!target) {

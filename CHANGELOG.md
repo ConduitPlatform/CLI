@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/ConduitPlatform/CLI/compare/v0.0.6...v0.0.7) (2022-07-25)
+
+
+### Features
+
+* **deploy:** setup workaround for outdated tags in latest major ([#25](https://github.com/ConduitPlatform/CLI/issues/25)) ([59355b6](https://github.com/ConduitPlatform/CLI/commit/59355b642f015d71096a857ee7c762521418faca))
+
+
+### Bug Fixes
+
+* **deploy:** listLocalDeployments failing while running=true ([#23](https://github.com/ConduitPlatform/CLI/issues/23)) ([28d17d1](https://github.com/ConduitPlatform/CLI/commit/28d17d1ce9764845176d8466e812b83ae70b30e3))
+
 ### [0.0.6](https://github.com/ConduitPlatform/CLI/compare/v0.0.5...v0.0.6) (2022-07-18)
 
 

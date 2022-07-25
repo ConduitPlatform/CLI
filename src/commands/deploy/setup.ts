@@ -23,6 +23,7 @@ export class DeploySetup extends Command {
   private readonly deployConfigBasePath = path.join(this.config.configDir, 'deploy');
   private userConfiguration!: boolean;
   private conduitTags: string[] = [];
+  private conduitUiTags: string[] = [];
   private selectedTag!: string;
   private deploymentConfig: DeploymentConfiguration = {
     modules: [],
@@ -32,7 +33,8 @@ export class DeploySetup extends Command {
 
   async run() {
     // Get Conduit Releases
-    await this.getTags();
+    await this.getTags('Conduit');
+    await this.getTags('Conduit-UI');
     this.userConfiguration = (await this.parse(DeploySetup)).flags.config;
     // Select Target Release
     if (!this.userConfiguration) {
@@ -108,9 +110,9 @@ export class DeploySetup extends Command {
       .catch(() => CliUx.ux.error('Failed to download env file', { exit: -1 }));
   }
 
-  private async getTags() {
+  private async getTags(repo: 'Conduit' | 'Conduit-UI') {
     const res = await axios.get(
-      'https://api.github.com/repos/ConduitPlatform/Conduit/releases',
+      `https://api.github.com/repos/ConduitPlatform/${repo}/releases`,
       { headers: { Accept: 'application/vnd.github.v3+json' } },
     );
     const releases: string[] = [];
@@ -125,7 +127,11 @@ export class DeploySetup extends Command {
     releases.sort().reverse();
     rcReleases.sort().reverse();
     releases.push(...rcReleases);
-    this.conduitTags = releases;
+    if (repo === 'Conduit') {
+      this.conduitTags = releases;
+    } else {
+      this.conduitUiTags = releases;
+    }
   }
 
   private async indexSupportedModules() {
@@ -166,6 +172,15 @@ export class DeploySetup extends Command {
   }
 
   private async configureEnvironment() {
+    // If selected tag's major is the latest major, explicitly specify target Conduit tag and latest Conduit-UI.
+    // This is a workaround for outdated env files in the main branch.
+    const tagPrefix = this.selectedTag.slice(1).split('.').slice(0, 2).join('.');
+    if (this.conduitTags[0].startsWith(`v${tagPrefix}`)) {
+      this.deploymentConfig.environment = {
+        IMAGE_TAG: this.selectedTag,
+        UI_IMAGE_TAG: this.conduitUiTags[0],
+      };
+    }
     // TODO: Parse .env file and prompt for overrides
     if (this.deploymentConfig.modules.includes('postgres')) {
       this.deploymentConfig.environment.DB_CONN_URI =

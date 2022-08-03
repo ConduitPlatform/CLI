@@ -1,6 +1,10 @@
 import { Command, Flags, CliUx } from '@oclif/core';
 import { promptWithOptions } from '../../utils/cli';
-import { getClientType, getOutputPath, getBaseUrl } from '../../utils/generateClient';
+import {
+  getClientType,
+  getOutputPath,
+  recoverApiConfigSafe,
+} from '../../utils/generateClient';
 import * as fs from 'fs';
 const { execSync } = require('child_process');
 
@@ -25,7 +29,7 @@ export class GenerateClientRest extends Command {
       console.log('Failed to detect Java installation.');
       CliUx.ux.exit(-1);
     }
-    const url = await getBaseUrl(this);
+    const { adminUrl, appUrl } = await recoverApiConfigSafe(this);
     const parsedFlags = (await this.parse(GenerateClientRest)).flags;
     console.log(
       `Conduit's REST API supports both application and administration requests.`,
@@ -38,11 +42,11 @@ export class GenerateClientRest extends Command {
     this.getSupportedClientTypes();
     const clientType = await getClientType(parsedFlags, this.supportedClientTypes);
     const libPath = await getOutputPath(parsedFlags, 'rest', requestType);
-    const inputSpec = requestType === 'admin' ? 'admin/swagger.json' : 'swagger.json';
+    const url = `${requestType === 'admin' ? adminUrl : appUrl}/swagger.json`;
     try {
       execSync(
         `npx @openapitools/openapi-generator-cli generate \
-        -i ${url}/${inputSpec} -g ${clientType} -o ${libPath} --skip-validate-spec`,
+        -i ${url} -g ${clientType} -o ${libPath} --skip-validate-spec`,
       );
       const zipPath = await this.convertToZip(libPath);
       console.log(`\nClient library archive available in: ${zipPath}`);
@@ -79,11 +83,7 @@ export class GenerateClientRest extends Command {
 
   private getJavaVersion() {
     try {
-      const javaVersion = execSync('java --version 2> /dev/null')
-        .toString()
-        .split(' ')[1];
-      console.log(javaVersion);
-      return javaVersion;
+      return execSync('java --version 2> /dev/null').toString().split(' ')[1];
     } catch (error) {
       return false;
     }

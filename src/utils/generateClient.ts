@@ -47,8 +47,8 @@ export async function getOutputPath(
   return outputPath;
 }
 
-export async function getBaseUrl(command: Command) {
-  const { url } = await recoverApiConfig(command).catch(async () => {
+export async function recoverApiConfigSafe(command: Command) {
+  return await recoverApiConfig(command).catch(async () => {
     const runInit = await booleanPrompt(
       'No configuration found. Run init and proceed?',
       'yes',
@@ -61,7 +61,6 @@ export async function getBaseUrl(command: Command) {
     await init.run();
     return await recoverApiConfig(command);
   });
-  return url;
 }
 
 function validateDirectoryPath(path: string) {

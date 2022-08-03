@@ -3,7 +3,7 @@ import * as path from 'path';
 import { Command } from '@oclif/core';
 import { Requests } from '../http/http';
 import { booleanPrompt } from './cli';
-import { Init } from './../commands/init';
+import { Init } from '../commands/init';
 
 export async function getRequestClient(command: Command) {
   const apiConfigPath = path.join(command.config.configDir, 'config.json');
@@ -23,16 +23,30 @@ export async function getRequestClient(command: Command) {
   const apiConfig = await fs.readJSON(apiConfigPath);
   const adminConfig = await fs.readJSON(adminConfigPath);
   // Initialize Requests Client
-  const requestClient = new Requests(command, apiConfig.url, apiConfig.masterKey);
-  await requestClient.initialize(adminConfig.admin, adminConfig.password);
+  const requestClient = new Requests(command, apiConfig.adminUrl, apiConfig.appUrl);
+  await requestClient.initialize(
+    adminConfig.admin,
+    adminConfig.password,
+    apiConfig.masterKey,
+    !!apiConfig.appUrl,
+  );
   return requestClient;
 }
 
 export async function recoverApiConfig(command: Command) {
   const apiConfig = await fs.readJSON(path.join(command.config.configDir, 'config.json'));
   return {
-    url: apiConfig.url as string,
+    adminUrl: apiConfig.adminUrl as string,
+    appUrl: apiConfig.appUrl as string,
     masterKey: apiConfig.masterKey as string,
+  };
+}
+
+export async function recoverAdminCredentials(command: Command) {
+  const apiConfig = await fs.readJSON(path.join(command.config.configDir, 'admin.json'));
+  return {
+    admin: apiConfig.admin as string,
+    password: apiConfig.password as string,
   };
 }
 
@@ -48,7 +62,7 @@ export async function recoverSecurityClientConfig(command: Command) {
 
 export async function storeConfiguration(
   command: Command,
-  environment: { url: string; masterKey: string },
+  environment: { adminUrl: string; appUrl: string; masterKey: string },
   admin: { admin: string; password: string },
 ) {
   await fs.ensureFile(path.join(command.config.configDir, 'config.json'));

@@ -2,9 +2,15 @@ import { Command, Flags, CliUx } from '@oclif/core';
 import { generate } from '@graphql-codegen/cli';
 import { isEmpty } from 'lodash';
 import { Requests } from '../../http/http';
-import { booleanPrompt } from '../../utils/cli';
+import { booleanPrompt, promptWithOptions } from '../../utils/cli';
 import { getRequestClient } from '../../utils/requestUtils';
-import { getClientType, getOutputPath, getBaseUrl } from '../../utils/generateClient';
+import {
+  getClientType,
+  getOutputPath,
+  recoverApiConfigSafe,
+} from '../../utils/generateClient';
+import { recoverAdminCredentials } from '../../utils/requestUtils';
+import { Init } from '../init';
 
 type CONFIG_OPTIONS_BASE_T =
   | 'avoidOptionals'
@@ -54,7 +60,7 @@ export class GenerateClientGraphql extends Command {
   ];
 
   async run() {
-    const url = await getBaseUrl(this);
+    const { adminUrl, appUrl, masterKey } = await recoverApiConfigSafe(this);
     const parsedFlags = (await this.parse(GenerateClientGraphql)).flags;
     CliUx.ux.action.start('Recovering credentials');
     let requestClient: Requests;
@@ -66,11 +72,32 @@ export class GenerateClientGraphql extends Command {
       return;
     }
     let headers = {};
-    if (requestClient.securityClient) {
+    let url: string;
+    console.log(
+      `Conduit's GraphQL API supports both application and administration requests.`,
+    );
+    const requestType = (await promptWithOptions(
+      'Specify target request type',
+      ['app', 'admin'],
+      'app',
+    )) as 'app' | 'admin';
+    if (requestType === 'admin') {
+      const { admin, password } = await this.recoverAdminCredentialsSafe(this);
+      await requestClient.initialize(admin, password, masterKey, false);
+      const authToken = await requestClient.loginRequest(admin, password);
+      url = adminUrl;
       headers = {
-        clientid: requestClient.securityClient.clientId,
-        clientsecret: requestClient.securityClient.clientSecret,
+        masterkey: masterKey,
+        Authorization: `Bearer ${authToken}`,
       };
+    } else {
+      url = appUrl;
+      if (requestClient.securityClient) {
+        headers = {
+          clientid: requestClient.securityClient.clientId,
+          clientsecret: requestClient.securityClient.clientSecret,
+        };
+      }
     }
     const clientType = await getClientType(parsedFlags, this.supportedClientTypes);
     await this.getConfig(clientType);
@@ -144,5 +171,21 @@ export class GenerateClientGraphql extends Command {
     if (isEmpty(configOptions)) return '';
     const validOptions = configOptions.filter(opt => this.genConfig[opt] === true);
     this.fileNameSuffix = `.${validOptions.join('.')}`;
+  }
+
+  private async recoverAdminCredentialsSafe(command: Command) {
+    return await recoverAdminCredentials(command).catch(async () => {
+      const runInit = await booleanPrompt(
+        'No configuration found. Run init and proceed?',
+        'yes',
+      );
+      if (!runInit) {
+        console.log('Aborting');
+        process.exit(0);
+      }
+      const init = new Init(command.argv, command.config);
+      await init.run();
+      return await recoverAdminCredentials(command);
+    });
   }
 }

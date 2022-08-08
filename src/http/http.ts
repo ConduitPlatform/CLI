@@ -4,7 +4,6 @@ import {
   storeSecurityClientConfiguration,
   recoverSecurityClientConfig,
 } from '../utils/requestUtils';
-import { booleanPrompt } from '../utils/cli';
 import { IGetSecurityClients } from '../interfaces';
 import * as os from 'os';
 

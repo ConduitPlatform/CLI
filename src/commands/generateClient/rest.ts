@@ -58,7 +58,7 @@ export class GenerateClientRest extends Command {
 
   private async convertToZip(libPath: string) {
     const zipPath = `${libPath}.zip`;
-    execSync(`zip -r ${zipPath} ${libPath}`);
+    execSync(`zip -rj ${zipPath} ${libPath}`);
     fs.rm(libPath, { recursive: true, force: true }, err => {
       if (err) {
         console.error(err);

@@ -1,6 +1,7 @@
 import { Command, Flags, CliUx } from '@oclif/core';
 import { Requests } from '../http/http';
 import { recoverApiConfig, storeConfiguration } from '../utils/requestUtils';
+import { booleanPrompt } from '../utils/cli';
 
 export class Init extends Command {
   static description = 'Initialize the CLI to communicate with Conduit';
@@ -16,49 +17,72 @@ Login Successful!
   static flags = {
     relogin: Flags.boolean({
       char: 'r',
-      description: 'Reuses url and master key from existing configuration',
+      description: 'Reuses API urls and master key from existing configuration',
     }),
   };
 
   async run() {
     const { flags } = await this.parse(Init);
-    let url, masterKey;
+    let adminUrl, appUrl, _masterKey;
     if (flags.relogin) {
       const obj = await recoverApiConfig(this);
-      url = obj.url;
-      masterKey = obj.masterKey;
+      adminUrl = obj.adminUrl;
+      appUrl = obj.appUrl;
+      _masterKey = obj.masterKey;
     }
     let requestInstance: Requests | undefined;
     while (true) {
-      if (!url) {
-        url = await CliUx.ux.prompt('Specify the API url of your Conduit installation');
-      }
-      if (!masterKey) {
-        masterKey = await CliUx.ux.prompt(
-          'Add the master key of your Conduit installation',
+      if (!adminUrl) {
+        adminUrl = await CliUx.ux.prompt(
+          'Specify the Administrative API url of your Conduit installation',
         );
       }
-      requestInstance = new Requests(this, url, masterKey);
-      const pingSuccessful = await requestInstance.httpHealthCheck();
+      requestInstance = new Requests(this, adminUrl);
+      const pingSuccessful = await requestInstance.httpHealthCheck('admin');
       if (pingSuccessful) break;
-      console.log(`Could not ping Conduit's HTTP server at ${url}`);
-      url = undefined;
+      CliUx.ux.log(
+        `Could not ping Conduit's Administrative HTTP server at ${adminUrl}\n`,
+      );
+      adminUrl = undefined;
+    }
+    if (!flags.relogin && !appUrl) {
+      const usesRouter = await booleanPrompt(
+        'Does your deployment utilize Conduit Router?',
+      );
+      if (usesRouter)
+        while (true) {
+          appUrl = await CliUx.ux.prompt(
+            'Specify the Application API url of your Conduit installation',
+          );
+          requestInstance = new Requests(this, adminUrl, appUrl);
+          const pingSuccessful = await requestInstance.httpHealthCheck('app');
+          if (pingSuccessful) break;
+          CliUx.ux.log(`Could not ping Conduit's Application HTTP server at ${appUrl}\n`);
+          appUrl = undefined;
+        }
     }
     let admin: string;
     let password: string;
+    let masterKey: string;
     while (true) {
+      if (!_masterKey) {
+        masterKey = await CliUx.ux.prompt(
+          'Add the master key of your Conduit installation',
+        );
+      } else {
+        masterKey = _masterKey;
+      }
       admin = await CliUx.ux.prompt('Specify the admin username');
       password = await CliUx.ux.prompt('Specify the admin password');
       CliUx.ux.action.start('Attempting login');
       try {
-        await requestInstance.loginRequest(admin, password);
+        await requestInstance.initialize(admin, password, masterKey, !!appUrl);
         CliUx.ux.action.stop('Login Successful!');
         break;
-      } catch (e) {
-        CliUx.ux.action.stop('Login failed!\n\n');
+      } catch {
+        CliUx.ux.action.stop('Login failed!\n');
       }
     }
-    await requestInstance.initialize(admin, password); // handle additional configuration
-    await storeConfiguration(this, { url, masterKey }, { admin, password });
+    await storeConfiguration(this, { adminUrl, appUrl, masterKey }, { admin, password });
   }
 }

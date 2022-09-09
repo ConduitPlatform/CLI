@@ -13,14 +13,16 @@ The CLI to help you when developing conduit.
 [//]: # ([![License]&#40;https://img.shields.io/npm/l/conduit-cli.svg&#41;]&#40;https://github.com/ConduitPlatform/CLI/blob/main/package.json&#41;)
 
 <!-- toc -->
-* [Limitations:](#limitations)
+* [Limitations](#limitations)
 * [Usage](#usage)
 * [Commands](#commands)
 * [Roadmap](#roadmap)
 <!-- tocstop -->
 
-# Limitations:
-* Currently, only creates schemas and only for TypeScript
+# Limitations
+
+While the CLI is capable of bootstrapping any Conduit release, including legacy ones,
+ `generateSchema` and `generateClient` commands currently require that you target >= v0.14.5.
 
 # Usage
 <!-- usage -->
@@ -29,7 +31,7 @@ $ npm install -g @conduitplatform/cli
 $ conduit COMMAND
 running command...
 $ conduit (--version|-v)
-@conduitplatform/cli/0.0.6 linux-x64 node-v16.15.0
+@conduitplatform/cli/0.0.7 linux-x64 node-v16.15.0
 $ conduit --help [COMMAND]
 USAGE
   $ conduit COMMAND
@@ -189,7 +191,7 @@ USAGE
   $ conduit init [-r]
 
 FLAGS
-  -r, --relogin  Reuses url and master key from existing configuration
+  -r, --relogin  Reuses API urls and master key from existing configuration
 
 DESCRIPTION
   Initialize the CLI to communicate with Conduit

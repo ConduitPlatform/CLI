@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/ConduitPlatform/CLI/compare/v0.0.7...v0.0.8) (2022-09-09)
+
+
+### Features
+
+* **generateClient:** GraphQL Admin Client Generation and overall fixes ([#26](https://github.com/ConduitPlatform/CLI/issues/26)) ([3eadc7e](https://github.com/ConduitPlatform/CLI/commit/3eadc7e43229f3c8e107ae957b43b73db664e2ee))
+
 ### [0.0.7](https://github.com/ConduitPlatform/CLI/compare/v0.0.6...v0.0.7) (2022-07-25)
 
 

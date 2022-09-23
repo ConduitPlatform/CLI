@@ -1,5 +1,5 @@
 import { Command, Flags, CliUx } from '@oclif/core';
-import dockerCompose from 'docker-compose';
+import dockerCompose from '../../docker/dockerCompose';
 import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
 
 export class DeployStop extends Command {

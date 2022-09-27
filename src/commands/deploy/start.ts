@@ -1,5 +1,5 @@
 import { Command, Flags, CliUx } from '@oclif/core';
-import dockerCompose from 'docker-compose';
+import dockerCompose from '../../docker/dockerCompose';
 import { DeploymentConfiguration } from '../../deploy/types';
 import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
 import * as fs from 'fs-extra';

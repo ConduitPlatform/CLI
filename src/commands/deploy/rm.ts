@@ -1,5 +1,6 @@
 import { Command, Flags, CliUx } from '@oclif/core';
-import dockerCompose from 'docker-compose';
+import dockerCompose from '../../docker/dockerCompose';
+import { DeployStop } from './stop';
 import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
 import * as fs from 'fs';
 
@@ -32,6 +33,11 @@ export class DeployRemove extends Command {
     // Retrieve Compose Files
     const { manifestPath: cwd, deploymentPath } = getDeploymentPaths(this, target);
     this.deploymentPath = deploymentPath;
+    // Stop Deployment
+    const runningDeployments = await listLocalDeployments(this, true);
+    if (runningDeployments.includes(target)) {
+      await DeployStop.run(['--target', target]);
+    }
     // Run Docker Compose
     await dockerCompose
       .rm({

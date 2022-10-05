@@ -83,9 +83,23 @@ export type DockerComposePsResult = {
 
 class DockerCompose {
   private readonly composeVersion = 1 | 2;
+  private readonly executablePath: string;
 
-  constructor(composeVersion?: 1 | 2) {
+  constructor(composeVersion?: 1 | 2, executablePath?: string) {
+    const fallbackExecPath = this.composeVersion === 1 ? 'docker-compose' : 'docker';
     this.composeVersion = composeVersion ?? this.inferComposeVersion();
+    if (executablePath) {
+      this.executablePath = executablePath;
+    } else {
+      try {
+        const detectedExecPath = execSync(`which ${fallbackExecPath}`).toString().trim();
+        this.executablePath = detectedExecPath.endsWith('not found')
+          ? fallbackExecPath
+          : detectedExecPath;
+      } catch {
+        this.executablePath = fallbackExecPath;
+      }
+    }
   }
 
   private inferComposeVersion() {
@@ -228,10 +242,8 @@ class DockerCompose {
       const cwd = options.cwd;
       const env = options.env || undefined;
 
-      const executablePath =
-        options.executablePath || this.composeVersion === 1 ? 'docker-compose' : 'docker';
       const childProc = spawn(
-        executablePath,
+        this.executablePath,
         this.composeVersion === 1 ? composeArgs : ['compose', ...composeArgs],
         {
           cwd,

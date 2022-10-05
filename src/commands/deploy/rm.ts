@@ -1,55 +1,115 @@
-import { Command, Flags, CliUx } from '@oclif/core';
+import { Command, CliUx, Flags } from '@oclif/core';
 import dockerCompose from '../../docker/dockerCompose';
+import { Docker } from '../../docker';
 import { DeployStop } from './stop';
-import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
-import * as fs from 'fs';
+import {
+  getTargetDeploymentPaths,
+  getActiveDeploymentTag,
+  unsetActiveDeployment,
+  deploymentIsRunning,
+} from '../../deploy/utils';
+import { booleanPrompt } from '../../utils/cli';
+import { DeploymentConfiguration } from '../../deploy/types';
+import { parse } from 'yaml';
+import * as fs from 'fs-extra';
+import * as dotenv from 'dotenv';
 
 export class DeployRemove extends Command {
-  static description = 'Bring down a local Conduit deployment';
+  static description = 'Remove your local Conduit deployment';
   static flags = {
-    target: Flags.string({
-      char: 't',
-      description: 'Specify target deployment',
+    'wipe-data': Flags.boolean({
+      description: 'Wipe data volumes',
+    }),
+    defaults: Flags.boolean({
+      description: 'Select default values',
     }),
   };
 
-  private deploymentPath!: string;
+  private wipeData!: boolean;
+  private stickToDefaults!: boolean;
+  private docker!: Docker;
+  private composePath!: string;
+  private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
-    // Select Target Deployment
-    let target = (await this.parse(DeployRemove)).flags.target;
-    if (!target) {
-      const availableDeployments = await listLocalDeployments(this);
-      if (availableDeployments.length === 0) {
-        CliUx.ux.log('No deployments available.');
-        CliUx.ux.exit(0);
-      }
-      CliUx.ux.log('Available Deployment Targets:');
-      availableDeployments.forEach(target => CliUx.ux.log(`- ${target}`));
-      do {
-        target = (await CliUx.ux.prompt('Select a target')) as string;
-      } while (!availableDeployments.includes(target));
-    }
+    const flags = (await this.parse(DeployRemove)).flags;
+    this.wipeData = flags['wipe-data'] ?? false;
+    this.stickToDefaults = flags.defaults ?? false;
+    this.docker = Docker.getInstance();
+    // Retrieve Target Deployment
+    const target = getActiveDeploymentTag(this);
     // Retrieve Compose Files
-    const { manifestPath: cwd, deploymentPath } = getDeploymentPaths(this, target);
-    this.deploymentPath = deploymentPath;
+    const {
+      manifestPath: cwd,
+      envPath,
+      deploymentConfigPath,
+      composePath,
+    } = getTargetDeploymentPaths(this);
+    this.composePath = composePath;
+    const processEnv = JSON.parse(JSON.stringify(process.env));
+    process.env = {};
+    dotenv.config({ path: envPath });
+    // Retrieve User Configuration
+    this.deploymentConfig = await fs.readJSONSync(deploymentConfigPath);
+    const composeOptions = this.deploymentConfig.modules.map(m => ['--profile', m]);
+    if (this.wipeData) {
+      composeOptions.push(['-v']);
+    }
+    const env = {
+      ...JSON.parse(JSON.stringify(process.env)),
+      ...this.deploymentConfig.environment,
+    };
+    process.env = processEnv;
+    // Prompt Data Wipe
+    if (!this.wipeData && !this.stickToDefaults) {
+      CliUx.ux.log(
+        'You may remove your existing deployment while preserving persistent data volumes.',
+      );
+      this.wipeData = await booleanPrompt(
+        'Do you wish to permanently wipe persistent data? 🗑️',
+        'no',
+      );
+    }
     // Stop Deployment
-    const runningDeployments = await listLocalDeployments(this, true);
-    if (runningDeployments.includes(target)) {
-      await DeployStop.run(['--target', target]);
+    if (await deploymentIsRunning(this)) {
+      await DeployStop.run();
     }
     // Run Docker Compose
     await dockerCompose
       .rm({
         cwd,
+        env,
         log: true,
+        composeOptions,
       })
       .catch(err => {
         CliUx.ux.error(err.message);
         CliUx.ux.exit(-1);
       });
+    // Remove Named Volumes
+    if (this.wipeData) {
+      await this.removeNamedVolumes();
+    }
     // Purge Deployment Configuration
     CliUx.ux.log(`Removing deployment configuration for ${target}...`);
-    fs.rmSync(this.deploymentPath, { recursive: true, force: true });
+    fs.rmSync(deploymentConfigPath, { recursive: true, force: true });
+    unsetActiveDeployment(this);
+  }
+
+  /*
+   * Removes named container volumes.
+   * Required as compose rm -v only removes anonymous volumes
+   */
+  private async removeNamedVolumes() {
+    // Retrieve Defined Modules
+    const composeFile = parse(fs.readFileSync(this.composePath, 'utf8'));
+    const definedVolumes = Object.keys(composeFile.volumes ?? {});
+    // Find Used Modules
+    let volumes: string[] = [];
+    for (const vol of definedVolumes) {
+      const matches = await this.docker.listVolumes(vol);
+      volumes = volumes.concat(matches);
+    }
+    volumes.forEach(v => this.docker.removeVolume(v));
   }
 }

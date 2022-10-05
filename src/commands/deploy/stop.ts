@@ -1,38 +1,40 @@
-import { Command, Flags, CliUx } from '@oclif/core';
+import { Command, CliUx } from '@oclif/core';
 import dockerCompose from '../../docker/dockerCompose';
-import { listLocalDeployments, getDeploymentPaths } from '../../deploy/utils';
+import { getTargetDeploymentPaths } from '../../deploy/utils';
+import { DeploymentConfiguration } from '../../deploy/types';
+import * as dotenv from 'dotenv';
+import * as fs from 'fs-extra';
 
 export class DeployStop extends Command {
-  static description = 'Bring down a local Conduit deployment';
-  static flags = {
-    target: Flags.string({
-      char: 't',
-      description: 'Specify target deployment',
-    }),
-  };
+  static description = 'Bring down your local Conduit deployment';
+
+  private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
-    // Select Target Deployment
-    let target = (await this.parse(DeployStop)).flags.target;
-    if (!target) {
-      const availableDeployments = await listLocalDeployments(this, true);
-      if (availableDeployments.length === 0) {
-        CliUx.ux.log('No running deployments available.');
-        CliUx.ux.exit(0);
-      }
-      CliUx.ux.log('Available Deployment Targets:');
-      availableDeployments.forEach(target => CliUx.ux.log(`- ${target}`));
-      do {
-        target = (await CliUx.ux.prompt('Select a target')) as string;
-      } while (!availableDeployments.includes(target));
-    }
     // Retrieve Compose Files
-    const { manifestPath: cwd } = getDeploymentPaths(this, target);
+    const {
+      manifestPath: cwd,
+      envPath,
+      deploymentConfigPath,
+    } = getTargetDeploymentPaths(this);
+    const processEnv = JSON.parse(JSON.stringify(process.env));
+    process.env = {};
+    dotenv.config({ path: envPath });
+    // Retrieve User Configuration
+    this.deploymentConfig = await fs.readJSONSync(deploymentConfigPath);
+    const composeOptions = this.deploymentConfig.modules.map(m => ['--profile', m]);
+    const env = {
+      ...JSON.parse(JSON.stringify(process.env)),
+      ...this.deploymentConfig.environment,
+    };
+    process.env = processEnv;
     // Run Docker Compose
     await dockerCompose
       .stop({
         cwd,
+        env,
         log: true,
+        composeOptions,
       })
       .catch(err => {
         CliUx.ux.error(err.message);

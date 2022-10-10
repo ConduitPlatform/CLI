@@ -45,6 +45,7 @@ USAGE
 * [`conduit deploy setup`](#conduit-deploy-setup)
 * [`conduit deploy start`](#conduit-deploy-start)
 * [`conduit deploy stop`](#conduit-deploy-stop)
+* [`conduit deploy update`](#conduit-deploy-update)
 * [`conduit generateClient graphql`](#conduit-generateclient-graphql)
 * [`conduit generateClient rest`](#conduit-generateclient-rest)
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
@@ -53,17 +54,18 @@ USAGE
 
 ## `conduit deploy rm`
 
-Bring down a local Conduit deployment
+Remove your local Conduit deployment
 
 ```
 USAGE
-  $ conduit deploy rm [-t <value>]
+  $ conduit deploy rm [--wipe-data] [--defaults]
 
 FLAGS
-  -t, --target=<value>  Specify target deployment
+  --defaults   Select default values
+  --wipe-data  Wipe data volumes
 
 DESCRIPTION
-  Bring down a local Conduit deployment
+  Remove your local Conduit deployment
 ```
 
 ## `conduit deploy setup`
@@ -72,10 +74,11 @@ Bootstrap a local Conduit deployment
 
 ```
 USAGE
-  $ conduit deploy setup [--config]
+  $ conduit deploy setup [--config] [--target <value>]
 
 FLAGS
-  --config  Enable manual deployment configuration
+  --config          Enable manual deployment configuration
+  --target=<value>  Specify target tag
 
 DESCRIPTION
   Bootstrap a local Conduit deployment
@@ -83,32 +86,42 @@ DESCRIPTION
 
 ## `conduit deploy start`
 
-Bring up a local Conduit deployment
+Bring up your local Conduit deployment
 
 ```
 USAGE
-  $ conduit deploy start [-t <value>]
-
-FLAGS
-  -t, --target=<value>  Specify target deployment
+  $ conduit deploy start
 
 DESCRIPTION
-  Bring up a local Conduit deployment
+  Bring up your local Conduit deployment
 ```
 
 ## `conduit deploy stop`
 
-Bring down a local Conduit deployment
+Bring down your local Conduit deployment
 
 ```
 USAGE
-  $ conduit deploy stop [-t <value>]
-
-FLAGS
-  -t, --target=<value>  Specify target deployment
+  $ conduit deploy stop
 
 DESCRIPTION
-  Bring down a local Conduit deployment
+  Bring down your local Conduit deployment
+```
+
+## `conduit deploy update`
+
+Update your local Conduit deployment
+
+```
+USAGE
+  $ conduit deploy update [--config] [--target <value>]
+
+FLAGS
+  --config          Enable manual deployment configuration
+  --target=<value>  Specify target tag
+
+DESCRIPTION
+  Update your local Conduit deployment
 ```
 
 ## `conduit generateClient graphql`

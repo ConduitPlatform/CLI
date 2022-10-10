@@ -21,4 +21,18 @@ export class Docker {
       return container.Names.includes(`/${name}`);
     });
   }
+
+  async listVolumes(nameSelect: string) {
+    return this.docker
+      .listVolumes({ filters: { name: [nameSelect] } })
+      .then(v => v.Volumes.map(info => info.Name));
+  }
+
+  async removeVolume(name: string) {
+    const volume = this.docker.getVolume(name);
+    return volume
+      .remove()
+      .then(_ => true)
+      .catch(_ => false);
+  }
 }

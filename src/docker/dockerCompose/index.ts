@@ -92,7 +92,10 @@ class DockerCompose {
       this.executablePath = executablePath;
     } else {
       try {
-        const detectedExecPath = execSync(`which ${fallbackExecPath}`).toString().trim();
+        const detectedExecPath =
+          process.platform === 'win32'
+            ? execSync(`where ${fallbackExecPath}`).toString().split('\n')[0] // windows
+            : execSync(`which ${fallbackExecPath}`).toString().trim(); // linux/mac
         this.executablePath = detectedExecPath.endsWith('not found')
           ? fallbackExecPath
           : detectedExecPath;

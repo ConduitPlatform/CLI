@@ -1,10 +1,12 @@
-import { Command, CliUx, Flags } from '@oclif/core';
+import { CliUx, Command, Flags } from '@oclif/core';
 import { TagComparison } from '../../deploy/types';
 import {
-  compareTags,
   abortAsEnemies,
+  compareTags,
   getActiveDeploymentTag,
+  getActiveDeploymentUiTag,
   getAvailableTags,
+  getMatchingUiTag,
   selectConduitTag,
 } from '../../deploy/utils';
 import { booleanPrompt } from '../../utils/cli';
@@ -23,7 +25,7 @@ export class DeployUpdate extends Command {
     }),
   };
 
-  private conduitTag!: string;
+  private targetConduitTag!: string;
   private wipeData: boolean = false;
 
   async run() {
@@ -31,23 +33,21 @@ export class DeployUpdate extends Command {
     const userConfiguration = flags.config ?? false;
     const targetTag = flags.target;
     // Retrieve Target Deployment
-    const activeTag = getActiveDeploymentTag(this);
+    const currentConduitTag = getActiveDeploymentTag(this);
     // Get Available Conduit Releases
     const conduitTags = await getAvailableTags('Conduit');
-    // Get Target Tag
-    this.conduitTag = await selectConduitTag(conduitTags, userConfiguration, targetTag);
-    if (activeTag === this.conduitTag) {
-      CliUx.ux.log('No updates available... 👍');
-      CliUx.ux.exit(0);
-    }
-    CliUx.ux.log(`Deployed Release:\t${activeTag}`);
-    CliUx.ux.log(`Target Release:  \t${this.conduitTag}`);
+    this.targetConduitTag = await selectConduitTag(
+      conduitTags,
+      userConfiguration,
+      targetTag,
+    );
+    // Check For Updates
+    const tagComparison = await this.availableUpdate(currentConduitTag);
     // Compare Tags
-    const tagComparison = compareTags(activeTag, this.conduitTag);
     if (tagComparison === TagComparison.FirstIsNewer) {
       // Current tag is more recent => Redeploy, Wipe Data
       CliUx.ux.log(
-        `You are about to downgrade your deployment from '${activeTag}' to '${this.conduitTag}' 🤔`,
+        `You are about to downgrade your deployment from '${currentConduitTag}' to '${this.targetConduitTag}' 🤔`,
       );
       CliUx.ux.log('Continuing will replace existing deployment, wiping your data 🗑️');
       this.wipeData = true;
@@ -60,7 +60,10 @@ export class DeployUpdate extends Command {
         'Continuing will replace existing deployment, preserving your data ✅',
       );
     }
-    const accept = await booleanPrompt('Continue?', 'no');
+    const accept = await booleanPrompt(
+      'Continue?',
+      tagComparison === TagComparison.FirstIsNewer ? 'no' : 'yes',
+    );
     if (!accept) {
       abortAsEnemies();
     }
@@ -68,9 +71,30 @@ export class DeployUpdate extends Command {
     const removeArgs = [...(this.wipeData ? ['--wipe-data'] : []), '--defaults'];
     await DeployRemove.run(removeArgs);
     // Setup New Deployment
-    const setup = new Setup(this, userConfiguration, this.conduitTag);
+    const setup = new Setup(this, userConfiguration, this.targetConduitTag);
     await setup.setupEnvironment();
     // Run New Deployment
     await DeployStart.run();
+  }
+
+  private async availableUpdate(currentConduitTag: string) {
+    const uiTags = await getAvailableTags('Conduit-UI');
+    const currentUiTag = getActiveDeploymentUiTag(this);
+    const targetUiTag = await getMatchingUiTag(this.targetConduitTag, uiTags);
+    const conduitTagComparison = compareTags(currentConduitTag, this.targetConduitTag);
+    const conduitUpdate = conduitTagComparison === TagComparison.SecondIsNewer;
+    const uiUpdate =
+      compareTags(currentUiTag, targetUiTag) === TagComparison.SecondIsNewer;
+    if (!conduitUpdate && !uiUpdate) {
+      CliUx.ux.log('No updates available... 👍');
+      CliUx.ux.exit(0);
+    }
+    if (conduitUpdate) {
+      CliUx.ux.log(`Conduit Update:\t${currentConduitTag} -> ${this.targetConduitTag}`);
+    }
+    if (uiUpdate) {
+      CliUx.ux.log(`Conduit-UI Update:\t${currentUiTag} -> ${targetUiTag}`);
+    }
+    return conduitTagComparison;
   }
 }

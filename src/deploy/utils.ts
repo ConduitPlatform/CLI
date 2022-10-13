@@ -50,20 +50,24 @@ function _getActiveDeploymentTag(command: Command, throwOnNull = true) {
       .trim();
     activeTag = activeTag !== '' ? activeTag : undefined;
   } catch {}
-  return activeTag;
-}
-
-export function getActiveDeploymentTag(command: Command) {
-  const activeTag = _getActiveDeploymentTag(command);
-  if (!activeTag) {
-    CliUx.ux.log('No deployment available 😵');
-    CliUx.ux.exit(0);
+  if (throwOnNull && !activeTag) {
+    CliUx.ux.error('No deployment available 😵', { exit: -1 });
   }
   return activeTag;
 }
 
+export function getActiveDeploymentTag(command: Command) {
+  return _getActiveDeploymentTag(command)!;
+}
+
+export function getActiveDeploymentUiTag(command: Command) {
+  const cfgPath = getTargetDeploymentPaths(command).deploymentConfigPath;
+  const activeEnv = fs.readJSONSync(cfgPath);
+  return activeEnv.environment.UI_IMAGE_TAG;
+}
+
 export function getActiveDeploymentTagOrUndefined(command: Command) {
-  return _getActiveDeploymentTag(command);
+  return _getActiveDeploymentTag(command, false);
 }
 
 export function unsetActiveDeployment(command: Command) {
@@ -195,7 +199,9 @@ export async function getMatchingUiTag(conduitTag: string, uiTags: string[]) {
 
 export function assertValidConduitTag(conduitTags: string[], targetTag: string) {
   if (!conduitTags.includes(targetTag)) {
-    CliUx.ux.error(`Unsupported Conduit tag '${targetTag}' provided!`, { exit: -1 });
+    CliUx.ux.error(`Unknown or unsupported Conduit tag '${targetTag}' provided!`, {
+      exit: -1,
+    });
   }
 }
 

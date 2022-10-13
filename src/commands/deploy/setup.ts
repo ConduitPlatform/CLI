@@ -79,7 +79,7 @@ export class DeploySetup extends Command {
           'Do you wish to restart your already running deployment?',
         );
       } else {
-        start = await booleanPrompt('Do you wish to start your deployment?');
+        start = await booleanPrompt('Do you wish to start your deployment?', 'yes');
       }
       if (!start) abortAsFriends();
       await DeployStart.run();

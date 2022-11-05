@@ -1,0 +1,75 @@
+name: Bug Report 🐛
+description: Report a bug in Conduit CLI
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: Please make sure you have read the following.
+      options:
+        - label: I agree to follow the [Code of Conduct](https://github.com/ConduitPlatform/CLI/blob/main/.github/CODE_OF_CONDUCT.md) that this project adheres to.
+          required: true
+        - label: I have searched the [Issue Tracker](https://github.com/ConduitPlatform/CLI/issues) for a bug that matches the one I want to file, without success.
+          required: true
+        - label: This issue is specifically related to Conduit's CLI
+          required: true
+ #       - label: This issue is not a report of a security vulnerability (see [here](https://github.com/ConduitPlatform/Conduit/security/policy) if you need to report a security issue).
+ #         required: true
+  - type: input
+    attributes:
+      label: CLI version
+      description: What version of Conduit CLI are you using? (`conduit --version`)
+      placeholder: 0.0.11
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Installation Type
+      description: Choose your CLI installation format
+      multiple: false
+      options:
+        - npm
+        - Linux
+        - MacOS
+#        - Windows
+        - Windows (WSL)
+        - Helm
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the Bug
+      description: A clear description of what actually happens.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: How to Reproduce
+      description: A clear description of how to reproduce the problem.
+      placeholder: |
+        1. Run `...`
+        2. Verify that `...`
+        3. Attempt to `...`
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional Information
+      description: If your problem needs further explanation, or if the issue you're seeing cannot be reproduced in a gist, please add more information here.
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: Environment
+      description: What is your operating system
+      placeholder: "e.g. Fedora Silverblue 37"
+    validations:
+      required: false

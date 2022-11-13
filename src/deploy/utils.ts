@@ -80,7 +80,7 @@ export function unsetActiveDeployment(command: Command) {
 export async function deploymentIsRunning(command: Command) {
   const tag = getActiveDeploymentTagOrUndefined(command);
   if (!tag) return false;
-  if (await Docker.getInstance().containerIsUp(`conduit-${tag}`)) {
+  if (await Docker.getInstance().containerIsUp('conduit')) {
     return true;
   }
 }

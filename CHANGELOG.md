@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/ConduitPlatform/CLI/compare/v0.0.11...v0.0.12) (2022-11-13)
+
+
+### Bug Fixes
+
+* **deploy:** deploymentIsRunning() ([#33](https://github.com/ConduitPlatform/CLI/issues/33)) ([f3df3a4](https://github.com/ConduitPlatform/CLI/commit/f3df3a430cadf1ef2eeae87594bc8008bdc80508))
+* **deploy:** update failing on ui-only updates, windows docker detection ([#29](https://github.com/ConduitPlatform/CLI/issues/29)) ([6b97926](https://github.com/ConduitPlatform/CLI/commit/6b979263b89ff7b08bb7ba82a40ee3eb3d1afa80))
+
 ### [0.0.11](https://github.com/ConduitPlatform/CLI/compare/v0.0.10...v0.0.11) (2022-10-10)
 
 

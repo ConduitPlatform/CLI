@@ -83,6 +83,7 @@ export class Setup {
     const uiTags = await getAvailableTags('Conduit-UI');
     const selectedUiTag = await getMatchingUiTag(this.selectedTag, uiTags);
     this.deploymentConfig.environment = {
+      COMPOSE_PROJECT_NAME: 'conduit-cli',
       IMAGE_TAG: this.selectedTag,
       UI_IMAGE_TAG: selectedUiTag,
     };

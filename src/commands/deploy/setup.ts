@@ -50,7 +50,9 @@ export class DeploySetup extends Command {
       );
       const setup = new Setup(this, this.userConfiguration, conduitTag);
       await setup.setupEnvironment();
-      await DeployStart.run();
+      await DeployStart.startDeployment(this, conduitTag, setup.deploymentConfig);
+      // Store Deployment Configuration After Successful Start
+      await setup.storeDeploymentConfig();
     }
   }
 

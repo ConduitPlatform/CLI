@@ -9,24 +9,33 @@ import * as open from 'open';
 export class DeployStart extends Command {
   static description = 'Bring up your local Conduit deployment';
 
-  private deploymentConfig!: DeploymentConfiguration;
-
   async run() {
-    // Retrieve Compose Files
+    await DeployStart.startDeployment(this);
+  }
+
+  static async startDeployment(
+    command: Command,
+    tag?: string,
+    deploymentConfig?: DeploymentConfiguration,
+  ) {
     const {
       manifestPath: cwd,
       envPath,
-      deploymentConfigPath,
-    } = getTargetDeploymentPaths(this, true);
+      deploymentConfigPath: readDeploymentConfigPath,
+    } = getTargetDeploymentPaths(command, tag, true);
+    if (!tag || !deploymentConfig) {
+      // Called directly (terminal)
+      deploymentConfig = (await fs.readJSONSync(
+        readDeploymentConfigPath,
+      )) as DeploymentConfiguration;
+    }
     const processEnv = JSON.parse(JSON.stringify(process.env));
     process.env = {};
     dotenv.config({ path: envPath });
-    // Retrieve User Configuration
-    this.deploymentConfig = await fs.readJSONSync(deploymentConfigPath);
-    const composeOptions = this.deploymentConfig.modules.map(m => ['--profile', m]);
+    const composeOptions = deploymentConfig.modules.map(m => ['--profile', m]);
     const env = {
       ...JSON.parse(JSON.stringify(process.env)),
-      ...this.deploymentConfig.environment,
+      ...deploymentConfig.environment,
     };
     process.env = processEnv;
     // Run Docker Compose

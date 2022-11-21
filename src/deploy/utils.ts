@@ -11,17 +11,17 @@ export function getBaseDeploymentPaths(command: Command) {
   return { configBasePath, manifestBasePath };
 }
 
-export function getTargetDeploymentPaths(command: Command, chatty = false) {
-  const tag = getActiveDeploymentTag(command);
+export function getTargetDeploymentPaths(command: Command, tag?: string, chatty = false) {
+  if (!tag) tag = getActiveDeploymentTag(command);
   const { configBasePath, manifestBasePath } = getBaseDeploymentPaths(command);
   const deploymentConfigPath = path.join(configBasePath, tag!);
   const manifestPath = path.join(manifestBasePath, tag!);
   const composePath = path.join(manifestPath, 'compose.yml');
   const envPath = path.join(manifestPath, 'env');
   if (
-    !fs.existsSync(deploymentConfigPath) ||
-    !fs.existsSync(composePath) ||
-    !fs.existsSync(envPath)
+    !fs.existsSync(composePath) || !fs.existsSync(envPath) || tag
+      ? false
+      : !fs.existsSync(deploymentConfigPath)
   ) {
     CliUx.ux.error(
       chatty

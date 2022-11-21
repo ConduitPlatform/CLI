@@ -16,10 +16,14 @@ export class Setup {
   private readonly manifestBasePath: string;
   private readonly deployConfigBasePath: string;
   private supportedModules: string[] = [];
-  private deploymentConfig: DeploymentConfiguration = {
+  private _deploymentConfig: DeploymentConfiguration = {
     modules: [],
     environment: {},
   };
+
+  get deploymentConfig() {
+    return this._deploymentConfig;
+  }
 
   constructor(
     private readonly command: Command,
@@ -35,15 +39,13 @@ export class Setup {
     await this.pullComposeFiles();
     // Select Modules
     if (!this.userConfiguration) {
-      this.deploymentConfig.modules.push('mongodb');
+      this._deploymentConfig.modules.push('mongodb');
     } else {
       await this.indexSupportedModules();
       await this.selectModules();
     }
     // Configure Environment
     await this.configureEnvironment();
-    // Store User Configuration
-    await this.storeDeploymentConfig();
   }
 
   private async indexSupportedModules() {
@@ -64,7 +66,7 @@ export class Setup {
   }
 
   private async selectModules() {
-    this.deploymentConfig.modules.push(
+    this._deploymentConfig.modules.push(
       await promptWithOptions(
         `Select database engine type`,
         ['mongodb', 'postgres'],
@@ -75,32 +77,32 @@ export class Setup {
     for (const pkg of this.supportedModules) {
       if (pkg === 'mongodb' || pkg === 'postgres') continue;
       const enable = await booleanPrompt(`Bring up ${pkg}?`, 'no');
-      if (enable) this.deploymentConfig.modules.push(pkg);
+      if (enable) this._deploymentConfig.modules.push(pkg);
     }
   }
 
   private async configureEnvironment() {
     const uiTags = await getAvailableTags('Conduit-UI');
     const selectedUiTag = await getMatchingUiTag(this.selectedTag, uiTags);
-    this.deploymentConfig.environment = {
-      COMPOSE_PROJECT_NAME: 'conduit-cli',
+    this._deploymentConfig.environment = {
+      COMPOSE_PROJECT_NAME: 'conduit',
       IMAGE_TAG: this.selectedTag,
       UI_IMAGE_TAG: selectedUiTag,
     };
     // TODO: Parse .env file and prompt for overrides
-    if (this.deploymentConfig.modules.includes('postgres')) {
-      this.deploymentConfig.environment.DB_CONN_URI =
+    if (this._deploymentConfig.modules.includes('postgres')) {
+      this._deploymentConfig.environment.DB_CONN_URI =
         'postgres://conduit:pass@conduit-postgres:5432/conduit';
-      this.deploymentConfig.environment.DB_TYPE = 'postgres';
-      this.deploymentConfig.environment.DB_PORT = '5432';
+      this._deploymentConfig.environment.DB_TYPE = 'postgres';
+      this._deploymentConfig.environment.DB_PORT = '5432';
     }
   }
 
-  private async storeDeploymentConfig() {
+  async storeDeploymentConfig() {
     const deployConfigPath = path.join(this.deployConfigBasePath, this.selectedTag);
     await fs.ensureDir(this.deployConfigBasePath);
     await fs.ensureFile(deployConfigPath);
-    fs.writeJsonSync(deployConfigPath, this.deploymentConfig);
+    fs.writeJsonSync(deployConfigPath, this._deploymentConfig);
     setActiveDeploymentTag(this.command, this.selectedTag);
   }
 

@@ -73,8 +73,14 @@ export class DeployUpdate extends Command {
     // Setup New Deployment
     const setup = new Setup(this, userConfiguration, this.targetConduitTag);
     await setup.setupEnvironment();
-    // Run New Deployment
-    await DeployStart.run();
+    // Start New Deployment
+    await DeployStart.startDeployment(
+      this,
+      this.targetConduitTag,
+      setup.deploymentConfig,
+    );
+    // Update Deployment Configuration After Successful Start
+    await setup.storeDeploymentConfig();
   }
 
   private async availableUpdate(currentConduitTag: string) {

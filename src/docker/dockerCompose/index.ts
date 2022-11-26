@@ -4,6 +4,7 @@ import { spawn, execSync } from 'child_process';
 import { parse as yamlParse } from 'yaml';
 import mapPorts from './map-ports';
 import { CliUx } from '@oclif/core';
+import { Docker } from '../Docker';
 
 export interface IDockerComposeOptions {
   cwd?: string;
@@ -81,26 +82,26 @@ export type DockerComposePsResult = {
   }>;
 };
 
-class DockerCompose {
+export class DockerCompose {
   private readonly composeVersion = 1 | 2;
   private readonly executablePath: string;
 
   constructor(composeVersion?: 1 | 2, executablePath?: string) {
-    const fallbackExecPath = this.composeVersion === 1 ? 'docker-compose' : 'docker';
+    const fallbackExec = this.composeVersion === 1 ? 'docker-compose' : 'docker';
     this.composeVersion = composeVersion ?? this.inferComposeVersion();
     if (executablePath) {
       this.executablePath = executablePath;
     } else {
       try {
-        const detectedExecPath =
+        const detectedExec =
           process.platform === 'win32'
-            ? execSync(`where ${fallbackExecPath}`).toString().split('\n')[0] // windows
-            : execSync(`which ${fallbackExecPath}`).toString().trim(); // linux/mac
-        this.executablePath = detectedExecPath.endsWith('not found')
-          ? fallbackExecPath
-          : detectedExecPath;
+            ? execSync(`where ${fallbackExec}`).toString().split('\n')[0] // windows
+            : execSync(`which ${fallbackExec}`).toString().trim(); // linux/mac
+        this.executablePath = detectedExec.endsWith('not found')
+          ? fallbackExec
+          : detectedExec;
       } catch {
-        this.executablePath = fallbackExecPath;
+        this.executablePath = fallbackExec;
       }
     }
   }
@@ -116,7 +117,7 @@ class DockerCompose {
       execSync('docker-compose --help');
       return 1;
     } catch {}
-    CliUx.ux.log('Could not detect docker compose version. Is docker compose installed?');
+    CliUx.ux.log('Could not detect Docker Compose version. Is Docker Compose installed?');
     process.exit(-1);
   }
 
@@ -580,6 +581,3 @@ class DockerCompose {
     }
   }
 }
-
-const dockerCompose = new DockerCompose();
-export default dockerCompose;

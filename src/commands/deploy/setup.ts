@@ -13,6 +13,7 @@ import {
 import { Setup } from '../../deploy/Setup';
 import { TagComparison } from '../../deploy/types';
 import { booleanPrompt } from '../../utils/cli';
+import { Docker } from '../../docker';
 
 export class DeploySetup extends Command {
   static description = 'Bootstrap a local Conduit deployment';
@@ -33,6 +34,7 @@ export class DeploySetup extends Command {
     const flags = (await this.parse(DeployUpdate)).flags;
     this.userConfiguration = flags.config ?? false;
     this.targetTag = flags.target;
+    Docker.getInstance(); // init or fail early
     // Get Available Conduit Releases
     this.conduitTags = await getAvailableTags('Conduit');
     if (this.targetTag) {

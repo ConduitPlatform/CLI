@@ -4,7 +4,6 @@ import { spawn, execSync } from 'child_process';
 import { parse as yamlParse } from 'yaml';
 import mapPorts from './map-ports';
 import { CliUx } from '@oclif/core';
-import { Docker } from '../Docker';
 
 export interface IDockerComposeOptions {
   cwd?: string;

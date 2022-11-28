@@ -13,6 +13,7 @@ import { booleanPrompt } from '../../utils/cli';
 import { DeployRemove } from './rm';
 import { DeployStart } from './start';
 import { Setup } from '../../deploy/Setup';
+import { Docker } from '../../docker';
 
 export class DeployUpdate extends Command {
   static description = 'Update your local Conduit deployment';
@@ -32,6 +33,7 @@ export class DeployUpdate extends Command {
     const flags = (await this.parse(DeployUpdate)).flags;
     const userConfiguration = flags.config ?? false;
     const targetTag = flags.target;
+    Docker.getInstance(); // init or fail early
     // Retrieve Target Deployment
     const currentConduitTag = getActiveDeploymentTag(this);
     // Get Available Conduit Releases

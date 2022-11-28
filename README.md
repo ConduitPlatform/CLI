@@ -1,7 +1,32 @@
-conduit-cli
-===========
+<div align="center">
+    <br>
+    <a href="https://getconduit.dev" target="_blank"><img src="https://getconduit.dev/conduitLogo.svg" height="80px" alt="logo"/></a>
+    <br/>
+    <h3>The only Backend you'll ever need.</h3>
+</div>
 
-The CLI to help you when developing conduit.
+# Conduit CLI
+
+Conduit's CLI is a multipurpose tool that's meant to facilitate your development experience and speed up your work
+regardless of whether you're deploying a Conduit instance for your project, developing custom modules or even
+contributing to the upstream project in your spare time.
+
+If you treat it right, it's gonna deploy local instances of Conduit for you, provide API client library generation for
+your frontend team, generate some TypeScript code for your custom modules and even handle your laundry... nah, wait I
+thought we were not actually releasing this one until the next release, right?
+
+Anyway, point is, if you're already using Conduit for your projects or 
+simply intend to give it a ride for the first time, you're most likely going to want to use this.
+
+## Requirements
+
+While the use of Docker is not required for every single piece of functionality provided, for most typical use cases
+you're going to [need Docker installed](https://docs.docker.com/get-docker) and configured so that your user is capable
+of utilizing it without superuser privileges.<br />
+For Linux users, this usually means adding your user to the `docker` group.
+
+You're also going to need some form of support for [docker compose](https://docs.docker.com/compose/install/).<br />
+Conduit's CLI supports both v2 and v1. The former comes pre-installed with the latest versions of Docker Desktop.
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg?style=for-the-badge)](https://oclif.io)
 ![npm (scoped)](https://img.shields.io/npm/v/@conduitplatform/cli?style=for-the-badge)
@@ -13,6 +38,7 @@ The CLI to help you when developing conduit.
 [//]: # ([![License]&#40;https://img.shields.io/npm/l/conduit-cli.svg&#41;]&#40;https://github.com/ConduitPlatform/CLI/blob/main/package.json&#41;)
 
 <!-- toc -->
+* [Conduit CLI](#conduit-cli)
 * [Limitations](#limitations)
 * [Usage](#usage)
 * [Commands](#commands)

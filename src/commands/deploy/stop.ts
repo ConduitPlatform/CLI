@@ -1,5 +1,5 @@
 import { Command, CliUx } from '@oclif/core';
-import dockerCompose from '../../docker/dockerCompose';
+import { Docker } from '../../docker';
 import { getTargetDeploymentPaths } from '../../deploy/utils';
 import { DeploymentConfiguration } from '../../deploy/types';
 import * as dotenv from 'dotenv';
@@ -8,9 +8,11 @@ import * as fs from 'fs-extra';
 export class DeployStop extends Command {
   static description = 'Bring down your local Conduit deployment';
 
+  private docker!: Docker;
   private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
+    this.docker = Docker.getInstance(); // init or fail early
     // Retrieve Compose Files
     const {
       manifestPath: cwd,
@@ -29,7 +31,7 @@ export class DeployStop extends Command {
     };
     process.env = processEnv;
     // Run Docker Compose
-    await dockerCompose
+    await this.docker.compose
       .stop({
         cwd,
         env,

@@ -1,5 +1,4 @@
 import { Command, CliUx, Flags } from '@oclif/core';
-import dockerCompose from '../../docker/dockerCompose';
 import { Docker } from '../../docker';
 import { DeployStop } from './stop';
 import {
@@ -25,9 +24,9 @@ export class DeployRemove extends Command {
     }),
   };
 
+  private docker!: Docker;
   private wipeData!: boolean;
   private stickToDefaults!: boolean;
-  private docker!: Docker;
   private composePath!: string;
   private deploymentConfig!: DeploymentConfiguration;
 
@@ -35,7 +34,7 @@ export class DeployRemove extends Command {
     const flags = (await this.parse(DeployRemove)).flags;
     this.wipeData = flags['wipe-data'] ?? false;
     this.stickToDefaults = flags.defaults ?? false;
-    this.docker = Docker.getInstance();
+    this.docker = Docker.getInstance(); // init or fail early
     // Retrieve Target Deployment
     const target = getActiveDeploymentTag(this);
     // Retrieve Compose Files
@@ -75,7 +74,7 @@ export class DeployRemove extends Command {
       await DeployStop.run();
     }
     // Run Docker Compose
-    await dockerCompose
+    await this.docker.compose
       .rm({
         cwd,
         env,

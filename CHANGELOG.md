@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/ConduitPlatform/CLI/compare/v0.0.12...v0.0.13) (2022-11-28)
+
+
+### Features
+
+* **deploy:** docker availability checks, daemon autostart ([#36](https://github.com/ConduitPlatform/CLI/issues/36)) ([e2f53ed](https://github.com/ConduitPlatform/CLI/commit/e2f53ed89cb2f2ff810c9332277c92cab15ec46d))
+
+
+### Bug Fixes
+
+* **deploy:** persistent volumes across conduit versions ([#34](https://github.com/ConduitPlatform/CLI/issues/34)) ([83aff02](https://github.com/ConduitPlatform/CLI/commit/83aff0201a7a7699edb717fde52ae2381c8a9e77))
+* **deploy:** unsuccessful setup/update actions updating deployment configuration files ([#35](https://github.com/ConduitPlatform/CLI/issues/35)) ([ccf502f](https://github.com/ConduitPlatform/CLI/commit/ccf502f85068939b0ee08f6a5fb19e77a3a77729))
+
 ### [0.0.12](https://github.com/ConduitPlatform/CLI/compare/v0.0.11...v0.0.12) (2022-11-13)
 
 

@@ -1,7 +1,7 @@
 {
   "name": "@conduitplatform/cli",
   "description": "The CLI to help you when developing conduit",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": "Conduit Team",
   "bin": {
     "conduit": "./bin/run"

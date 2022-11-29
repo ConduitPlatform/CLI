@@ -94,7 +94,7 @@ export class DeployUpdate extends Command {
     const uiUpdate =
       compareTags(currentUiTag, targetUiTag) === TagComparison.SecondIsNewer;
     if (!conduitUpdate && !uiUpdate) {
-      CliUx.ux.log('No updates available... 👍');
+      CliUx.ux.log('No Conduit updates available... 👍');
       CliUx.ux.exit(0);
     }
     if (conduitUpdate) {

@@ -87,6 +87,9 @@
       "identifier": "dev.getconduit.cli"
     },
     "topics": {
+      "cli": {
+        "description": "Manage your CLI installation"
+      },
       "deploy": {
         "description": "Deploy and manage local Conduit instances"
       },

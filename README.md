@@ -67,6 +67,7 @@ USAGE
 
 # Commands
 <!-- commands -->
+* [`conduit cli update`](#conduit-cli-update)
 * [`conduit deploy rm`](#conduit-deploy-rm)
 * [`conduit deploy setup`](#conduit-deploy-setup)
 * [`conduit deploy start`](#conduit-deploy-start)
@@ -77,6 +78,18 @@ USAGE
 * [`conduit generateSchema [PATH]`](#conduit-generateschema-path)
 * [`conduit help [COMMAND]`](#conduit-help-command)
 * [`conduit init`](#conduit-init)
+
+## `conduit cli update`
+
+Update your CLI
+
+```
+USAGE
+  $ conduit cli update
+
+DESCRIPTION
+  Update your CLI
+```
 
 ## `conduit deploy rm`
 

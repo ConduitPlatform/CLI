@@ -82,7 +82,7 @@ export type DockerComposePsResult = {
 };
 
 export class DockerCompose {
-  private readonly composeVersion = 1 | 2;
+  private readonly composeVersion: 1 | 2 = 2;
   private readonly executablePath: string;
 
   constructor(composeVersion?: 1 | 2, executablePath?: string) {

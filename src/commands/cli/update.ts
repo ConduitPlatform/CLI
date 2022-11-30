@@ -87,7 +87,7 @@ export class CliUpdate extends Command {
         CliUx.ux.log(chunk.toString());
       });
       child.on('error', () => {
-        return reject(new Error('Failed to start child'));
+        return reject(new Error('Failed to execute get-conduit.sh'));
       });
       child.on('exit', () => {
         return resolve({});

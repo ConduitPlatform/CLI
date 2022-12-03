@@ -4,10 +4,11 @@ import { mkdir } from 'fs/promises';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
-const { spawn } = require('child_process');
-import chalk = require('chalk');
 import { InstallationType } from '../../interfaces';
 import { getInstallationType } from '../../utils/installation';
+
+const { spawn } = require('child_process');
+import chalk = require('chalk');
 
 const SCRIPT_URL = 'https://getconduit.dev/bootstrap';
 
@@ -52,6 +53,19 @@ export class CliUpdate extends Command {
       });
     const latestVersion = ghRes.data.tag_name;
     return thisVersion !== latestVersion;
+  }
+
+  static async displayUpdateHint(command: Command) {
+    const updateAvailable = (await CliUpdate.updateAvailable(command).catch()) ?? false;
+    if (!updateAvailable) return;
+    const installationType = getInstallationType();
+    CliUx.ux.log(`\n 📣 ${chalk.bgGreen.bold('   CLI Update Available   ')} 📣`);
+    if (installationType === InstallationType.SYSTEM) {
+      CliUx.ux.log(` ${chalk.italic('    Run: conduit cli update')} `);
+    } else if (installationType === InstallationType.NPM) {
+      CliUx.ux.log(` ${chalk.italic('        Install via npm')} `);
+    }
+    CliUx.ux.log('');
   }
 
   private handleInstallationType() {

@@ -69,7 +69,7 @@ export class DeployStart extends Command {
         .then(() => (uiServing = true))
         .catch(() => {
           if (!warnedOnce) {
-            CliUx.ux.log(chalk.yellow('    This may take a while...'));
+            CliUx.ux.log(chalk.italic('    This may take a while...'));
             warnedOnce = true;
           }
           sleep(1000);

@@ -1,6 +1,7 @@
 import { Command, CliUx, Flags } from '@oclif/core';
 import { Docker } from '../../docker';
 import { DeployStop } from './stop';
+import { CliUpdate } from '../cli/update';
 import {
   getTargetDeploymentPaths,
   getActiveDeploymentTag,
@@ -31,6 +32,7 @@ export class DeployRemove extends Command {
   private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     const flags = (await this.parse(DeployRemove)).flags;
     this.wipeData = flags['wipe-data'] ?? false;
     this.stickToDefaults = flags.defaults ?? false;

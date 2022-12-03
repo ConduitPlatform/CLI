@@ -1,4 +1,5 @@
 import { Command, Flags, CliUx } from '@oclif/core';
+import { CliUpdate } from './cli/update';
 import { Requests } from '../http/http';
 import { recoverApiConfig, storeConfiguration } from '../utils/requestUtils';
 import { booleanPrompt } from '../utils/cli';
@@ -22,6 +23,7 @@ Login Successful!
   };
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     const { flags } = await this.parse(Init);
     let adminUrl, appUrl, _masterKey;
     if (flags.relogin) {

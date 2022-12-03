@@ -1,5 +1,6 @@
 import { Command, CliUx } from '@oclif/core';
 import { Docker } from '../../docker';
+import { CliUpdate } from '../cli/update';
 import { DeploymentConfiguration } from '../../deploy/types';
 import { getTargetDeploymentPaths } from '../../deploy/utils';
 import { sleep } from '../../utils/sleep';
@@ -13,6 +14,7 @@ export class DeployStart extends Command {
   static description = 'Bring up your local Conduit deployment';
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     Docker.getInstance(); // init or fail early
     await DeployStart.startDeployment(this);
   }

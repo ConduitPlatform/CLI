@@ -1,4 +1,5 @@
 import { Command, CliUx } from '@oclif/core';
+import { CliUpdate } from './cli/update';
 import { getRequestClient } from '../utils/requestUtils';
 import { Requests } from '../http/http';
 import { generateSchema } from '../generators/Schema/Schema.generator';
@@ -16,6 +17,7 @@ Generating schemas
   static args = [{ name: 'path' }];
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     const { args } = await this.parse(GenerateSchema);
     CliUx.ux.action.start('Recovering credentials');
     let requestClient: Requests;

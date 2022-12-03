@@ -1,6 +1,7 @@
 import { CliUx, Command, Flags } from '@oclif/core';
 import { DeployStart } from './start';
 import { DeployUpdate } from './update';
+import { CliUpdate } from '../cli/update';
 import {
   abortAsFriends,
   assertValidConduitTag,
@@ -32,6 +33,7 @@ export class DeploySetup extends Command {
   private conduitTags!: string[];
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     const flags = (await this.parse(DeployUpdate)).flags;
     this.userConfiguration = flags.config ?? false;
     this.targetTag = flags.target;

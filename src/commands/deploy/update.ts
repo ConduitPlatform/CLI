@@ -12,6 +12,7 @@ import {
 import { booleanPrompt } from '../../utils/cli';
 import { DeployRemove } from './rm';
 import { DeployStart } from './start';
+import { CliUpdate } from '../cli/update';
 import { Setup } from '../../deploy/Setup';
 import { Docker } from '../../docker';
 
@@ -30,6 +31,7 @@ export class DeployUpdate extends Command {
   private wipeData: boolean = false;
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     const flags = (await this.parse(DeployUpdate)).flags;
     const userConfiguration = flags.config ?? false;
     const targetTag = flags.target;

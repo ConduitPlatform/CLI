@@ -2,11 +2,10 @@ import { CliUx, Command } from '@oclif/core';
 import { get } from 'https';
 import { mkdir } from 'fs/promises';
 import axios from 'axios';
-import * as fs from 'fs';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 import { InstallationType } from '../../interfaces';
 import { getInstallationType } from '../../utils/installation';
-
 const { spawn } = require('child_process');
 import chalk = require('chalk');
 
@@ -19,15 +18,17 @@ export class CliUpdate extends Command {
   private readonly scriptPath = path.join(this.scriptDownloadDir, 'get-conduit.sh');
 
   async run() {
+    // Update Checks
     if (!CliUpdate.platformSupported()) {
       CliUx.ux.log('Self-managed CLI updates are not supported on your platform');
       CliUx.ux.exit(-1);
     }
-    if (!(await CliUpdate.updateAvailable(this))) {
+    if (!(await CliUpdate.updateAvailable(this, false))) {
       CliUx.ux.log('No CLI updates available... 👍');
       CliUx.ux.exit(0);
     }
     this.handleInstallationType();
+    // CLI Update (System)
     await this.downloadScript().catch(() => {
       CliUx.ux.error('Failed to retrieve update script.');
       CliUx.ux.exit(-1);
@@ -43,16 +44,38 @@ export class CliUpdate extends Command {
     return ['linux', 'darwin'].includes(process.platform);
   }
 
-  static async updateAvailable(command: Command) {
+  static async updateAvailable(command: Command, acceptCached = true) {
     const thisVersion = `v${command.config.version}`;
+    const latestVersion = await CliUpdate.getLatestVersion(command, acceptCached);
+    return thisVersion !== latestVersion;
+  }
+
+  private static async getLatestVersion(command: Command, acceptCached = true) {
+    let cached: { version: string; timestamp: Date } | undefined;
+    const versionCacheFile = path.join(
+      command.config.cacheDir,
+      'latest-gh-version-cache',
+    );
+    if (acceptCached) {
+      cached = await fs.readJSON(versionCacheFile).catch(() => undefined);
+      if (cached) {
+        cached.timestamp = new Date(cached.timestamp);
+        const thirtyMinutesAgo = new Date().getTime() - 30 * 60 * 1000;
+        if (cached.timestamp.getTime() > thirtyMinutesAgo) {
+          return cached.version;
+        }
+      }
+    }
     const ghRes = await axios
       .get('https://api.github.com/repos/ConduitPlatform/CLI/releases/latest')
       .catch(() => {
-        CliUx.ux.error('Could not retrieve latest CLI release info.');
+        CliUx.ux.error('Could not retrieve latest CLI release info. Try again later.');
         CliUx.ux.exit(-1);
       });
     const latestVersion = ghRes.data.tag_name;
-    return thisVersion !== latestVersion;
+    cached = { version: latestVersion, timestamp: new Date() };
+    await fs.writeJson(versionCacheFile, cached);
+    return latestVersion;
   }
 
   static async displayUpdateHint(command: Command) {

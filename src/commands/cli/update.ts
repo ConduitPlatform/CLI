@@ -1,10 +1,13 @@
-import { Command, CliUx } from '@oclif/core';
+import { CliUx, Command } from '@oclif/core';
 import { get } from 'https';
 import { mkdir } from 'fs/promises';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
 const { spawn } = require('child_process');
+import chalk = require('chalk');
+import { InstallationType } from '../../interfaces';
+import { getInstallationType } from '../../utils/installation';
 
 const SCRIPT_URL = 'https://getconduit.dev/bootstrap';
 
@@ -23,6 +26,7 @@ export class CliUpdate extends Command {
       CliUx.ux.log('No CLI updates available... 👍');
       CliUx.ux.exit(0);
     }
+    this.handleInstallationType();
     await this.downloadScript().catch(() => {
       CliUx.ux.error('Failed to retrieve update script.');
       CliUx.ux.exit(-1);
@@ -48,6 +52,15 @@ export class CliUpdate extends Command {
       });
     const latestVersion = ghRes.data.tag_name;
     return thisVersion !== latestVersion;
+  }
+
+  private handleInstallationType() {
+    const installationType = getInstallationType();
+    if (installationType === InstallationType.SYSTEM) return;
+    if (installationType === InstallationType.NPM) {
+      CliUx.ux.log(chalk.magentaBright('Your CLI updates are handled by npm.'));
+    }
+    process.exit(0);
   }
 
   private removeScript() {

@@ -14,6 +14,7 @@ import { Setup } from '../../deploy/Setup';
 import { TagComparison } from '../../deploy/types';
 import { booleanPrompt } from '../../utils/cli';
 import { Docker } from '../../docker';
+import chalk = require('chalk');
 
 export class DeploySetup extends Command {
   static description = 'Bootstrap a local Conduit deployment';
@@ -53,6 +54,7 @@ export class DeploySetup extends Command {
       const setup = new Setup(this, this.userConfiguration, conduitTag);
       await setup.setupEnvironment();
       await DeployStart.startDeployment(this, conduitTag, setup.deploymentConfig);
+      await this.displayDefaultCredentials();
       // Store Deployment Configuration After Successful Start
       await setup.storeDeploymentConfig();
     }
@@ -88,5 +90,19 @@ export class DeploySetup extends Command {
       if (!start) abortAsFriends();
       await DeployStart.run();
     }
+  }
+
+  private async displayDefaultCredentials() {
+    CliUx.ux.log(
+      `\n\n 🤫 ${chalk
+        .bgRgb(153, 102, 255)
+        .bold.underline('   Default Credentials   ')} 🔑`,
+    );
+    CliUx.ux.log(
+      `${chalk.greenBright('       Username:  ')}${chalk.magentaBright('admin')}`,
+    );
+    CliUx.ux.log(
+      `${chalk.greenBright('       Password:  ')}${chalk.magentaBright('admin')}`,
+    );
   }
 }

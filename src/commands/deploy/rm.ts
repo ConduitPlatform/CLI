@@ -65,7 +65,7 @@ export class DeployRemove extends Command {
         'You may remove your existing deployment while preserving persistent data volumes.',
       );
       this.wipeData = await booleanPrompt(
-        'Do you wish to permanently wipe persistent data? 🗑️',
+        'Do you wish to permanently wipe persistent data? 🗑️ ',
         'no',
       );
     }

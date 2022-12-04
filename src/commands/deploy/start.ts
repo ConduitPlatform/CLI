@@ -2,9 +2,12 @@ import { Command, CliUx } from '@oclif/core';
 import { Docker } from '../../docker';
 import { DeploymentConfiguration } from '../../deploy/types';
 import { getTargetDeploymentPaths } from '../../deploy/utils';
+import { sleep } from '../../utils/sleep';
 import * as fs from 'fs-extra';
 import * as dotenv from 'dotenv';
 import * as open from 'open';
+import axios from 'axios';
+import chalk = require('chalk');
 
 export class DeployStart extends Command {
   static description = 'Bring up your local Conduit deployment';
@@ -53,6 +56,25 @@ export class DeployStart extends Command {
         CliUx.ux.exit(-1);
       });
     // Launch Conduit UI
+    await DeployStart.bringUpUi();
+  }
+
+  static async bringUpUi() {
+    CliUx.ux.log(`\n 💻 ${chalk.bgBlueBright.bold('   Launching Dashboard   ')} 💻`);
+    let uiServing = false;
+    let warnedOnce = false;
+    while (!uiServing) {
+      await axios
+        .get('http://localhost:8080')
+        .then(() => (uiServing = true))
+        .catch(() => {
+          if (!warnedOnce) {
+            CliUx.ux.log(chalk.yellow('    This may take a while...'));
+            warnedOnce = true;
+          }
+          sleep(1000);
+        });
+    }
     await open('http://localhost:8080');
   }
 }

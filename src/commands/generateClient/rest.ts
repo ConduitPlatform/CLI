@@ -1,4 +1,5 @@
 import { Command, Flags, CliUx } from '@oclif/core';
+import { CliUpdate } from '../cli/update';
 import { promptWithOptions } from '../../utils/cli';
 import {
   getClientType,
@@ -23,6 +24,7 @@ export class GenerateClientRest extends Command {
   private supportedClientTypes: string[] = [];
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     const javaVersion = this.getJavaVersion();
     if (!javaVersion) {
       // This is a temporary solution until we figure out the best way to approach this using Docker

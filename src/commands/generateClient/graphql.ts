@@ -1,4 +1,5 @@
 import { Command, Flags, CliUx } from '@oclif/core';
+import { CliUpdate } from '../cli/update';
 import { generate } from '@graphql-codegen/cli';
 import { isEmpty } from 'lodash';
 import { Requests } from '../../http/http';
@@ -60,6 +61,7 @@ export class GenerateClientGraphql extends Command {
   ];
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     const { adminUrl, appUrl, masterKey } = await recoverApiConfigSafe(this);
     const parsedFlags = (await this.parse(GenerateClientGraphql)).flags;
     CliUx.ux.action.start('Recovering credentials');

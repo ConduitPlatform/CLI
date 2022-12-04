@@ -1,5 +1,6 @@
 import { Command, CliUx } from '@oclif/core';
 import { Docker } from '../../docker';
+import { CliUpdate } from '../cli/update';
 import { getTargetDeploymentPaths } from '../../deploy/utils';
 import { DeploymentConfiguration } from '../../deploy/types';
 import * as dotenv from 'dotenv';
@@ -12,6 +13,7 @@ export class DeployStop extends Command {
   private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
+    await CliUpdate.displayUpdateHint(this);
     this.docker = Docker.getInstance(); // init or fail early
     // Retrieve Compose Files
     const {

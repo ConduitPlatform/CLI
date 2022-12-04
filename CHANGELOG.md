@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.14](https://github.com/ConduitPlatform/CLI/compare/v0.0.13...v0.0.14) (2022-12-04)
+
+
+### Features
+
+* **cli:** available update hints ([#40](https://github.com/ConduitPlatform/CLI/issues/40)) ([2f5dba7](https://github.com/ConduitPlatform/CLI/commit/2f5dba7e4433dfa95a8e31a3f04f51e70e8beb5b))
+* **cli:** update command ([#37](https://github.com/ConduitPlatform/CLI/issues/37)) ([3ad332b](https://github.com/ConduitPlatform/CLI/commit/3ad332bb0878995fbc4e52bf55685c0a10a96805))
+* **deploy:** ui improvements ([#38](https://github.com/ConduitPlatform/CLI/issues/38)) ([edef577](https://github.com/ConduitPlatform/CLI/commit/edef577d8f257ec814087e82ca9996e3a8ac3063))
+
 ### [0.0.13](https://github.com/ConduitPlatform/CLI/compare/v0.0.12...v0.0.13) (2022-11-28)
 
 

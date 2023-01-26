@@ -132,8 +132,8 @@ export async function getAvailableTags(repo: 'Conduit' | 'Conduit-UI') {
       rcReleases.push(release.tag_name);
     }
   });
-  releases.sort().reverse();
-  rcReleases.sort().reverse();
+  releases.sort(semanticSort).reverse();
+  rcReleases.sort(semanticSort).reverse();
   releases.push(...rcReleases);
   if (releases.length === 0) {
     CliUx.ux.error(`No supported ${repo} versions available`, { exit: -1 });
@@ -175,7 +175,7 @@ export async function getMatchingUiTag(conduitTag: string, uiTags: string[]) {
     const tagMajor = tag.slice(baseVersion < 1 ? 3 : 1);
     return parseInt(targetMajor) === parseInt(tagMajor);
   });
-  pointReleases.sort().reverse();
+  pointReleases.sort(semanticSort).reverse();
   const stableReleases: string[] = [];
   const rcReleases: string[] = [];
   pointReleases.forEach(r => {
@@ -225,3 +225,9 @@ export function abortAsEnemies() {
   CliUx.ux.log(abortLines[Math.floor(Math.random() * abortLines.length)]);
   CliUx.ux.exit(0);
 }
+
+const semanticSort = (a: string, b: string) => {
+  const a1 = a.split('.').map(x => +x || 0);
+  const b1 = b.split('.').map(x => +x || 0);
+  return a1.reduce((acc, curr, i) => acc || curr - b1[i] || b1.length - a1.length, 0);
+};

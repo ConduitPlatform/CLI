@@ -68,8 +68,9 @@ export class CliUpdate extends Command {
     }
     const ghRes = await axios
       .get('https://api.github.com/repos/ConduitPlatform/CLI/releases/latest')
-      .catch(() => {
+      .catch(e => {
         CliUx.ux.error('Could not retrieve latest CLI release info. Try again later.');
+        CliUx.ux.error(e);
         CliUx.ux.exit(-1);
       });
     const latestVersion = ghRes.data.tag_name;

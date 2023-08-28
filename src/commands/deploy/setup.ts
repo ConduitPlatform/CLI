@@ -33,16 +33,21 @@ export class DeploySetup extends Command {
   private conduitTags!: string[];
 
   async run() {
+    console.log('0');
     await CliUpdate.displayUpdateHint(this);
+    console.log('1');
     const flags = (await this.parse(DeployUpdate)).flags;
     this.userConfiguration = flags.config ?? false;
     this.targetTag = flags.target;
     Docker.getInstance(); // init or fail early
     // Get Available Conduit Releases
+    console.log('2');
     this.conduitTags = await getAvailableTags('Conduit');
+    console.log('3');
     if (this.targetTag) {
       assertValidConduitTag(this.conduitTags, this.targetTag);
     }
+    console.log('to be continued');
     // Check Deployment Status
     const activeTag = getActiveDeploymentTagOrUndefined(this);
     if (activeTag) {

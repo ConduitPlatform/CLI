@@ -3248,6 +3248,13 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
+docker-compose@^0.24.2:
+  version "0.24.2"
+  resolved "https://registry.yarnpkg.com/docker-compose/-/docker-compose-0.24.2.tgz#172027153b6c16239d5457fe48f56c7803f42c9d"
+  integrity sha512-2/WLvA7UZ6A2LDLQrYW0idKipmNBWhtfvrn2yzjC5PnHDzuFVj1zAZN6MJxVMKP0zZH8uzAK6OwVZYHGuyCmTw==
+  dependencies:
+    yaml "^2.2.2"
+
 docker-modem@^3.0.0:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/docker-modem/-/docker-modem-3.0.5.tgz#86b7d25ac85fd5515380ba1fccc327fe17346686"
@@ -7828,6 +7835,11 @@ yaml@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.1.1.tgz#1e06fb4ca46e60d9da07e4f786ea370ed3c3cfec"
   integrity sha512-o96x3OPo8GjWeSLF+wOAbrPfhFOGY0W00GNaxCDv+9hkcDJEnev1yh8S7pgHF0ik6zc8sQLuL8hjHjJULZp8bw==
+
+yaml@^2.2.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.3.2.tgz#f522db4313c671a0ca963a75670f1c12ea909144"
+  integrity sha512-N/lyzTPaJasoDmfV7YTrYCI0G/3ivm/9wdG0aHuheKowWQwGTsK0Eoiw6utmzAnI6pkJa0DUVygvp3spqqEKXg==
 
 yargs-parser@^18.1.2:
   version "18.1.3"

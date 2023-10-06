@@ -1,19 +1,19 @@
 import Dockerode = require('dockerode');
 import { execSync } from 'child_process';
 import { CliUx } from '@oclif/core';
-import { DockerCompose } from './dockerCompose';
+import { Compose, getCompose } from './compose';
 
 export class Docker {
   private static _instance?: Docker;
   private readonly docker: Dockerode;
-  readonly compose: DockerCompose;
+  readonly compose: Compose;
 
   private constructor() {
     this.assertAvailable();
     this.docker = new Dockerode({
       socketPath: process.env.DOCKER_SOCKET ?? '/var/run/docker.sock',
     });
-    this.compose = new DockerCompose();
+    this.compose = getCompose();
   }
 
   static getInstance() {

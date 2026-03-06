@@ -1,174 +1,102 @@
-import { Command, CliUx } from '@oclif/core';
-import axios, { AxiosResponse } from 'axios';
-import {
-  storeSecurityClientConfiguration,
-  recoverSecurityClientConfig,
-} from '../utils/requestUtils';
-import { IGetSecurityClients } from '../interfaces';
-import * as os from 'os';
+import { Command } from '@oclif/core';
+import axios from 'axios';
+import type {
+  StateExportResponse,
+  StateImportBody,
+  StateImportResponse,
+  ConfigImportResponse,
+} from '../interfaces/state';
 
 export class Requests {
   private readonly command: Command;
   private readonly adminUrl: string;
+  private readonly apiToken: string;
   private readonly appUrl?: string;
-  private baseHeaders: {
-    [header: string]: string;
-  } = {};
-  private token?: string;
-  private clientValidation: {
-    enabled: boolean;
-    clientId?: string;
-    clientSecret?: string;
-  } = { enabled: false };
 
-  constructor(command: Command, adminUrl: string, appUrl?: string) {
+  constructor(command: Command, adminUrl: string, apiToken: string, appUrl?: string) {
     this.command = command;
     this.adminUrl = adminUrl;
+    this.apiToken = apiToken;
     this.appUrl = appUrl;
   }
 
-  async initialize(
-    username: string,
-    password: string,
-    masterKey: string,
-    usesRouter: boolean,
-  ) {
-    this.baseHeaders['masterkey'] = masterKey;
-    axios.interceptors.request.use(
-      config => {
-        config.headers = this.getRequestHeaders();
-        return config;
-      },
-      error => {
-        return Promise.reject(error.response);
-      },
-    );
-    this.token = await this.loginRequest(username, password);
-    if (usesRouter) {
-      const routerConfig = await this.getModuleConfig('router').catch(async () => {
-        CliUx.ux.log('Please make sure Conduit Router is online before proceeding.');
-        process.exit(-1);
-      });
-      if (routerConfig.security.clientValidation.enabled) {
-        this.clientValidation.enabled = true;
-        let securityClient = await recoverSecurityClientConfig(this.command).catch(() => {
-          return { clientId: '', clientSecret: '' };
-        });
-        if (!(await this.validSecurityClient(securityClient.clientId))) {
-          securityClient = await this.createSecurityClient();
-        }
-        this.clientValidation.clientId = securityClient.clientId;
-        this.clientValidation.clientSecret = securityClient.clientSecret;
-      }
-    }
-  }
-
-  private getRequestHeaders() {
+  private getRequestHeaders(): Record<string, string> {
     return {
-      ...this.baseHeaders,
-      ...(this.token && { Authorization: `Bearer ${this.token}` }),
+      Authorization: `Bearer ${this.apiToken}`,
     };
   }
 
-  get securityClient() {
-    return this.clientValidation.enabled
-      ? {
-          clientId: this.clientValidation.clientId!,
-          clientSecret: this.clientValidation.clientSecret!,
-        }
-      : null;
+  /** For use by generateClient and other consumers that need auth headers. */
+  getAuthHeaders(): Record<string, string> {
+    return this.getRequestHeaders();
+  }
+
+  /**
+   * Verify connection to the admin API using the API token.
+   * Used after init and by getRequestClient.
+   */
+  async verifyConnection(): Promise<boolean> {
+    try {
+      const res = await axios.get(`${this.adminUrl}/ready`, {
+        headers: this.getRequestHeaders(),
+      });
+      return res.data?.result === 'Conduit Core is online!';
+    } catch {
+      return false;
+    }
+  }
+
+  get adminBaseUrl(): string {
+    return this.adminUrl;
+  }
+
+  get applicationUrl(): string | undefined {
+    return this.appUrl;
   }
 
   // API Requests
-  async httpHealthCheck(api: 'admin' | 'app') {
-    // NOTE: This won't work for: v0.14.0, v0.14.1, v0.14.2, v0.14.3, v0.14.4
-    if (api === 'app' && !this.appUrl) {
-      CliUx.ux.error('No Application API url specified. Health check failed.', {
-        exit: -1,
-      });
-    }
-    let pingRoutes: string[];
-    if (api === 'admin') {
-      pingRoutes = [`${this.adminUrl}/ready`];
-    } else {
-      pingRoutes = [
-        `${this.appUrl}/ready`,
-        `${this.appUrl}/health`, // fallback: <=v0.14.4
-      ];
-    }
-    for (const route of pingRoutes) {
-      const success = await axios
-        .get(route)
-        .then(res => {
-          return (
-            res.data.result ===
-            (api === 'app' ? 'Conduit is online!' : 'Conduit Core is online!')
-          );
-        })
-        .catch(() => false);
-      if (success) return true;
-    }
-    return false;
-  }
-
-  loginRequest(username: string, password: string): Promise<string> {
-    return axios
-      .post(`${this.adminUrl}/login`, {
-        username,
-        password,
-      })
-      .then((r: AxiosResponse<{ token: string }>) => {
-        this.token = r.data.token;
-        return this.token;
-      });
-  }
-
   getSchemasRequest(skip: number, limit: number) {
     return axios
-      .get(`${this.adminUrl}/database/schemas`, { params: { skip, limit } })
+      .get(`${this.adminUrl}/database/schemas`, {
+        params: { skip, limit },
+        headers: this.getRequestHeaders(),
+      })
       .then(r => r.data);
   }
 
   getModulesRequest() {
-    return axios.get(`${this.adminUrl}/config/modules`).then(r => r.data);
+    return axios
+      .get(`${this.adminUrl}/config/modules`, { headers: this.getRequestHeaders() })
+      .then(r => r.data);
   }
 
   getModuleConfig(module: string) {
-    return axios.get(`${this.adminUrl}/config/${module}`).then(r => r.data.config);
-  }
-
-  fetchSecurityClients() {
-    if (!this.clientValidation.enabled) {
-      throw new Error('Security Clients are disabled');
-    }
     return axios
-      .get(`${this.adminUrl}/router/security/client`)
-      .then((r: IGetSecurityClients) => r.data.clients);
+      .get(`${this.adminUrl}/config/${module}`, { headers: this.getRequestHeaders() })
+      .then(r => r.data.config);
   }
 
-  async createSecurityClient() {
-    if (!this.clientValidation.enabled) {
-      throw new Error('Security Clients are disabled');
-    }
-    const hostname = os.hostname;
-    const uniqueSuffix = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
-      .toString(36)
-      .substring(0, 6);
-    const securityClient = await axios
-      .post(`${this.adminUrl}/router/security/client`, {
-        platform: 'CLI',
-        alias: `cli-${hostname}_${uniqueSuffix}`,
-        notes: `A Conduit CLI Client for ${hostname}`,
-      })
-      .then(r => {
-        return { clientId: r.data.clientId, clientSecret: r.data.clientSecret };
-      });
-    await storeSecurityClientConfiguration(this.command, securityClient);
-    return securityClient;
+  stateExport(): Promise<StateExportResponse> {
+    return axios
+      .get(`${this.adminUrl}/state/export`, { headers: this.getRequestHeaders() })
+      .then(r => r.data);
   }
 
-  async validSecurityClient(clientId: string) {
-    const clients = await this.fetchSecurityClients();
-    return clients.some(client => client.clientId === clientId);
+  stateImport(body: StateImportBody): Promise<StateImportResponse> {
+    return axios
+      .post(`${this.adminUrl}/state/import`, body, { headers: this.getRequestHeaders() })
+      .then(r => r.data);
+  }
+
+  configImport(config: {
+    modules: Record<string, object>;
+  }): Promise<ConfigImportResponse> {
+    return axios
+      .post(
+        `${this.adminUrl}/config/import`,
+        { config },
+        { headers: this.getRequestHeaders() },
+      )
+      .then(r => r.data);
   }
 }

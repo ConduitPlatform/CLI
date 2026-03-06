@@ -96,6 +96,9 @@
       },
       "generateClient": {
         "description": "Generate client libraries for your Conduit APIs"
+      },
+      "state": {
+        "description": "Manage Conduit state as code (pull/push/diff)"
       }
     }
   },

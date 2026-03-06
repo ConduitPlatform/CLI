@@ -5,10 +5,15 @@ import { Requests } from '../http/http';
 import { booleanPrompt } from './cli';
 import { Init } from '../commands/init';
 
-export async function getRequestClient(command: Command) {
+export interface ApiConfig {
+  adminUrl: string;
+  token: string;
+  appUrl?: string;
+}
+
+export async function getRequestClient(command: Command): Promise<Requests> {
   const apiConfigPath = path.join(command.config.configDir, 'config.json');
-  const adminConfigPath = path.join(command.config.configDir, 'admin.json');
-  if (!fs.existsSync(apiConfigPath) || !fs.existsSync(adminConfigPath)) {
+  if (!fs.existsSync(apiConfigPath)) {
     const runInit = await booleanPrompt(
       'No configuration found. Run init and proceed?',
       'yes',
@@ -20,64 +25,56 @@ export async function getRequestClient(command: Command) {
     const init = new Init(command.argv, command.config);
     await init.run();
   }
-  const apiConfig = await fs.readJSON(apiConfigPath);
-  const adminConfig = await fs.readJSON(adminConfigPath);
-  // Initialize Requests Client
-  const requestClient = new Requests(command, apiConfig.adminUrl, apiConfig.appUrl);
-  await requestClient.initialize(
-    adminConfig.admin,
-    adminConfig.password,
-    apiConfig.masterKey,
-    !!apiConfig.appUrl,
+  const apiConfig = (await fs.readJSON(apiConfigPath)) as ApiConfig;
+  if (!apiConfig.adminUrl || !apiConfig.token) {
+    const runInit = await booleanPrompt(
+      'Invalid configuration (missing adminUrl or token). Run init and proceed?',
+      'yes',
+    );
+    if (!runInit) {
+      console.log('Aborting');
+      process.exit(0);
+    }
+    const init = new Init(command.argv, command.config);
+    await init.run();
+    return getRequestClient(command);
+  }
+  const requestClient = new Requests(
+    command,
+    apiConfig.adminUrl,
+    apiConfig.token,
+    apiConfig.appUrl,
   );
+  const ok = await requestClient.verifyConnection();
+  if (!ok) {
+    const runInit = await booleanPrompt(
+      'Connection to Conduit failed. Run init to reconfigure?',
+      'yes',
+    );
+    if (!runInit) {
+      console.log('Aborting');
+      process.exit(0);
+    }
+    const init = new Init(command.argv, command.config);
+    await init.run();
+    return getRequestClient(command);
+  }
   return requestClient;
 }
 
-export async function recoverApiConfig(command: Command) {
+export async function recoverApiConfig(command: Command): Promise<ApiConfig> {
   const apiConfig = await fs.readJSON(path.join(command.config.configDir, 'config.json'));
   return {
     adminUrl: apiConfig.adminUrl as string,
-    appUrl: apiConfig.appUrl as string,
-    masterKey: apiConfig.masterKey as string,
-  };
-}
-
-export async function recoverAdminCredentials(command: Command) {
-  const apiConfig = await fs.readJSON(path.join(command.config.configDir, 'admin.json'));
-  return {
-    admin: apiConfig.admin as string,
-    password: apiConfig.password as string,
-  };
-}
-
-export async function recoverSecurityClientConfig(command: Command) {
-  const securityClientConfig = await fs.readJSON(
-    path.join(command.config.configDir, 'securityClient.json'),
-  );
-  return {
-    clientId: securityClientConfig.clientId as string,
-    clientSecret: securityClientConfig.clientSecret as string,
+    token: apiConfig.token as string,
+    appUrl: apiConfig.appUrl as string | undefined,
   };
 }
 
 export async function storeConfiguration(
   command: Command,
-  environment: { adminUrl: string; appUrl: string; masterKey: string },
-  admin: { admin: string; password: string },
+  config: { adminUrl: string; token: string; appUrl?: string },
 ) {
   await fs.ensureFile(path.join(command.config.configDir, 'config.json'));
-  await fs.ensureFile(path.join(command.config.configDir, 'admin.json'));
-  await fs.writeJSON(path.join(command.config.configDir, 'config.json'), environment);
-  await fs.writeJSON(path.join(command.config.configDir, 'admin.json'), admin);
-}
-
-export async function storeSecurityClientConfiguration(
-  command: Command,
-  securityClient: { clientId: string; clientSecret: string },
-) {
-  await fs.ensureFile(path.join(command.config.configDir, 'securityClient.json'));
-  await fs.writeJSON(
-    path.join(command.config.configDir, 'securityClient.json'),
-    securityClient,
-  );
+  await fs.writeJSON(path.join(command.config.configDir, 'config.json'), config);
 }

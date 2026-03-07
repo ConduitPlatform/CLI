@@ -1,8 +1,7 @@
-import { Command, Flags, CliUx } from '@oclif/core';
-import { CliUpdate } from './cli/update';
+import { Command, Flags, ux } from '@oclif/core';
 import { Requests } from '../http/http';
 import { recoverApiConfig, storeConfiguration } from '../utils/requestUtils';
-import { booleanPrompt } from '../utils/cli';
+import { booleanPrompt, prompt } from '../utils/cli';
 
 export class Init extends Command {
   static description =
@@ -38,7 +37,6 @@ Connected successfully!
   };
 
   async run() {
-    await CliUpdate.displayUpdateHint(this);
     const { flags } = await this.parse(Init);
     let adminUrl: string | undefined = flags['admin-url'];
     let token: string | undefined = flags.token;
@@ -56,31 +54,31 @@ Connected successfully!
 
     // Prompt for admin URL if not provided
     while (!adminUrl) {
-      adminUrl = await CliUx.ux.prompt(
+      adminUrl = await prompt(
         'Specify the Administrative API URL of your Conduit installation',
       );
     }
 
     // Prompt for token if not provided
     while (!token) {
-      token = await CliUx.ux.prompt(
+      token = await prompt(
         'Paste your API token (create one in Conduit admin: Settings > API Tokens)',
         { type: 'hide' },
       );
       if (!token?.trim()) {
-        CliUx.ux.log('Token cannot be empty.\n');
+        this.log('Token cannot be empty.\n');
         token = undefined;
       }
     }
     token = token.trim();
 
-    CliUx.ux.action.start('Verifying connection');
+    ux.action.start('Verifying connection');
     const requestInstance = new Requests(this, adminUrl, token, appUrl);
     const ok = await requestInstance.verifyConnection();
-    CliUx.ux.action.stop(ok ? 'Connected successfully!' : 'Connection failed');
+    ux.action.stop(ok ? 'Connected successfully!' : 'Connection failed');
 
     if (!ok) {
-      CliUx.ux.log(
+      this.log(
         `Could not connect to Conduit at ${adminUrl}. Check the URL and that your API token is valid.\n`,
       );
       process.exit(1);
@@ -94,7 +92,7 @@ Connected successfully!
       );
       if (useRouter) {
         while (true) {
-          appUrl = await CliUx.ux.prompt(
+          appUrl = await prompt(
             'Specify the Application API URL of your Conduit installation',
           );
           if (appUrl) break;

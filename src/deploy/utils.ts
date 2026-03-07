@@ -1,4 +1,5 @@
-import { CliUx, Command } from '@oclif/core';
+import { Command, ux } from '@oclif/core';
+import { prompt } from '../utils/cli';
 import { Docker } from '../docker';
 import { TagComparison } from './types';
 import * as path from 'path';
@@ -19,16 +20,16 @@ export function getTargetDeploymentPaths(command: Command, tag?: string, chatty 
   const composePath = path.join(manifestPath, 'compose.yml');
   const envPath = path.join(manifestPath, 'env');
   if (
-    !fs.existsSync(composePath) || !fs.existsSync(envPath) || tag
-      ? false
-      : !fs.existsSync(deploymentConfigPath)
+    !fs.existsSync(composePath) ||
+    !fs.existsSync(envPath) ||
+    (tag ? false : !fs.existsSync(deploymentConfigPath))
   ) {
-    CliUx.ux.error(
+    ux.error(
       chatty
         ? 'Deployment files could not be retrieved. Did you run deploy setup?'
         : 'No deployment available',
     );
-    CliUx.ux.exit(-1);
+    ux.exit(-1);
   }
   return { deploymentConfigPath, manifestPath, composePath, envPath };
 }
@@ -51,7 +52,7 @@ function _getActiveDeploymentTag(command: Command, throwOnNull = true) {
     activeTag = activeTag !== '' ? activeTag : undefined;
   } catch {}
   if (throwOnNull && !activeTag) {
-    CliUx.ux.error('No deployment available 😵', { exit: -1 });
+    ux.error('No deployment available 😵', { exit: -1 });
   }
   return activeTag;
 }
@@ -77,16 +78,13 @@ export function unsetActiveDeployment(command: Command) {
   } catch {}
 }
 
-export async function deploymentIsRunning(command: Command) {
+export async function deploymentIsRunning(command: Command): Promise<boolean> {
   const tag = getActiveDeploymentTagOrUndefined(command);
   if (!tag) return false;
-  if (await Docker.getInstance().containerIsUp('conduit')) {
-    return true;
-  }
+  return Docker.getInstance().containerIsUp('conduit');
 }
 
 export function compareTags(tagA: string, tagB: string, depth = 0): TagComparison {
-  // ex format: 'v0.15.1-rc1'
   const baseVersionA = parseFloat(depth === 0 ? tagA.slice(1) : tagA);
   const baseVersionB = parseFloat(depth === 0 ? tagB.slice(1) : tagB);
   if (tagA === tagB) {
@@ -103,7 +101,6 @@ export function compareTags(tagA: string, tagB: string, depth = 0): TagCompariso
         depth + 1,
       );
     } else {
-      // release candidate
       if (!tagA.includes('-') && tagB.includes('-')) return TagComparison.FirstIsNewer;
       if (tagA.includes('-') && !tagB.includes('-')) return TagComparison.SecondIsNewer;
       return compareTags(
@@ -123,7 +120,7 @@ export async function getAvailableTags(repo: 'Conduit' | 'Conduit-UI') {
   );
   const releases: string[] = [];
   const rcReleases: string[] = [];
-  res.data.forEach((release: any) => {
+  res.data.forEach((release: { tag_name: string }) => {
     if (!release.tag_name.startsWith('v')) return;
     if (parseFloat(release.tag_name.slice(1)) < MIN_SUPPORTED_VERSION) return;
     if (release.tag_name.indexOf('-') === -1) {
@@ -136,7 +133,7 @@ export async function getAvailableTags(repo: 'Conduit' | 'Conduit-UI') {
   rcReleases.sort(semanticSort).reverse();
   releases.push(...rcReleases);
   if (releases.length === 0) {
-    CliUx.ux.error(`No supported ${repo} versions available`, { exit: -1 });
+    ux.error(`No supported ${repo} versions available`, { exit: -1 });
   }
   return releases;
 }
@@ -155,11 +152,11 @@ export async function selectConduitTag(
       conduitTag = conduitTags[0];
     } else {
       while (!conduitTags.includes(conduitTag)) {
-        conduitTag = await CliUx.ux.prompt('Specify your desired Conduit version', {
+        conduitTag = await prompt('Specify your desired Conduit version', {
           default: conduitTags[0],
         });
         if (!conduitTags.includes(conduitTag)) {
-          CliUx.ux.log(`Please choose a valid target tag. Example: ${conduitTags[0]}\n`);
+          ux.stdout(`Please choose a valid target tag. Example: ${conduitTags[0]}\n`);
         }
       }
     }
@@ -168,7 +165,6 @@ export async function selectConduitTag(
 }
 
 export async function getMatchingUiTag(conduitTag: string, uiTags: string[]) {
-  // Find Matching Ui Tag
   const baseVersion = parseFloat(conduitTag.slice(1));
   const pointReleases = uiTags.filter(tag => {
     const targetMajor = conduitTag.slice(baseVersion < 1 ? 3 : 1);
@@ -190,7 +186,7 @@ export async function getMatchingUiTag(conduitTag: string, uiTags: string[]) {
   } else if (rcReleases.length > 0) {
     return rcReleases[0];
   } else {
-    CliUx.ux.error(
+    ux.error(
       `Could not locate a compatible Conduit UI release for Conduit ${conduitTag}`,
       { exit: -1 },
     );
@@ -199,21 +195,20 @@ export async function getMatchingUiTag(conduitTag: string, uiTags: string[]) {
 
 export function assertValidConduitTag(conduitTags: string[], targetTag: string) {
   if (!conduitTags.includes(targetTag)) {
-    CliUx.ux.error(`Unknown or unsupported Conduit tag '${targetTag}' provided!`, {
+    ux.error(`Unknown or unsupported Conduit tag '${targetTag}' provided!`, {
       exit: -1,
     });
   }
 }
 
-// Memes
 export function abortAsFriends() {
   const abortLines = [
     'Alright then, see you around handsome 😘',
     `Don't be a stranger! 👋`,
     'After a while 🐊',
   ];
-  CliUx.ux.log(abortLines[Math.floor(Math.random() * abortLines.length)]);
-  CliUx.ux.exit(0);
+  ux.stdout(abortLines[Math.floor(Math.random() * abortLines.length)] + '\n');
+  ux.exit(0);
 }
 
 export function abortAsEnemies() {
@@ -222,8 +217,8 @@ export function abortAsEnemies() {
     'I am sworn to carry your burdens... 🙄',
     'Pathetic! How dare you disturb my slumber over this? 🧞',
   ];
-  CliUx.ux.log(abortLines[Math.floor(Math.random() * abortLines.length)]);
-  CliUx.ux.exit(0);
+  ux.stdout(abortLines[Math.floor(Math.random() * abortLines.length)] + '\n');
+  ux.exit(0);
 }
 
 const semanticSort = (a: string, b: string) => {

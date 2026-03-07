@@ -1,7 +1,6 @@
-import { Command, CliUx, Flags } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 import { Docker } from '../../docker';
 import { DeployStop } from './stop';
-import { CliUpdate } from '../cli/update';
 import {
   getTargetDeploymentPaths,
   getActiveDeploymentTag,
@@ -32,14 +31,11 @@ export class DeployRemove extends Command {
   private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
-    await CliUpdate.displayUpdateHint(this);
     const flags = (await this.parse(DeployRemove)).flags;
     this.wipeData = flags['wipe-data'] ?? false;
     this.stickToDefaults = flags.defaults ?? false;
-    this.docker = Docker.getInstance(); // init or fail early
-    // Retrieve Target Deployment
+    this.docker = Docker.getInstance();
     const target = getActiveDeploymentTag(this);
-    // Retrieve Compose Files
     const {
       manifestPath: cwd,
       envPath,
@@ -50,20 +46,14 @@ export class DeployRemove extends Command {
     const processEnv = JSON.parse(JSON.stringify(process.env));
     process.env = {};
     dotenv.config({ path: envPath });
-    // Retrieve User Configuration
     this.deploymentConfig = await fs.readJSONSync(deploymentConfigPath);
-    const composeOptions = this.deploymentConfig.modules.map(m => ['--profile', m]);
-    if (this.wipeData) {
-      composeOptions.push(['-v']);
-    }
     const env = {
       ...JSON.parse(JSON.stringify(process.env)),
       ...this.deploymentConfig.environment,
     };
     process.env = processEnv;
-    // Prompt Data Wipe
     if (!this.wipeData && !this.stickToDefaults) {
-      CliUx.ux.log(
+      this.log(
         'You may remove your existing deployment while preserving persistent data volumes.',
       );
       this.wipeData = await booleanPrompt(
@@ -71,46 +61,36 @@ export class DeployRemove extends Command {
         'no',
       );
     }
-    // Stop Deployment
     if (await deploymentIsRunning(this)) {
       await DeployStop.run();
     }
-    // Run Docker Compose
-    await this.docker.compose
-      .rm({
-        cwd,
-        env,
-        log: true,
-        composeOptions,
-      })
-      .catch(err => {
-        CliUx.ux.error(err.message);
-        CliUx.ux.exit(-1);
-      });
-    // Remove Named Volumes
+    const result = await this.docker.compose.rm({
+      cwd,
+      env,
+      log: true,
+      volumes: this.wipeData,
+    });
+    if (result.exitCode !== 0) {
+      this.error(result.stderr || 'docker compose rm failed', { exit: 1 });
+    }
     if (this.wipeData) {
       await this.removeNamedVolumes();
     }
-    // Purge Deployment Configuration
-    CliUx.ux.log(`Removing deployment configuration for ${target}...`);
+    this.log(`Removing deployment configuration for ${target}...`);
     fs.rmSync(deploymentConfigPath, { recursive: true, force: true });
     unsetActiveDeployment(this);
   }
 
-  /*
-   * Removes named container volumes.
-   * Required as compose rm -v only removes anonymous volumes
-   */
-  private async removeNamedVolumes() {
-    // Retrieve Defined Modules
-    const composeFile = parse(fs.readFileSync(this.composePath, 'utf8'));
+  private async removeNamedVolumes(): Promise<void> {
+    const composeFile = parse(fs.readFileSync(this.composePath, 'utf8')) as {
+      volumes?: Record<string, unknown>;
+    };
     const definedVolumes = Object.keys(composeFile.volumes ?? {});
-    // Find Used Modules
-    let volumes: string[] = [];
+    const volumeNames: string[] = [];
     for (const vol of definedVolumes) {
       const matches = await this.docker.listVolumes(vol);
-      volumes = volumes.concat(matches);
+      volumeNames.push(...matches);
     }
-    volumes.forEach(v => this.docker.removeVolume(v));
+    await Promise.all(volumeNames.map(v => this.docker.removeVolume(v)));
   }
 }

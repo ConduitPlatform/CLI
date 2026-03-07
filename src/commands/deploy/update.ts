@@ -1,4 +1,4 @@
-import { CliUx, Command, Flags } from '@oclif/core';
+import { Command, Flags, ux } from '@oclif/core';
 import { TagComparison } from '../../deploy/types';
 import {
   abortAsEnemies,
@@ -12,7 +12,6 @@ import {
 import { booleanPrompt } from '../../utils/cli';
 import { DeployRemove } from './rm';
 import { DeployStart } from './start';
-import { CliUpdate } from '../cli/update';
 import { Setup } from '../../deploy/Setup';
 import { Docker } from '../../docker';
 
@@ -31,7 +30,6 @@ export class DeployUpdate extends Command {
   private wipeData: boolean = false;
 
   async run() {
-    await CliUpdate.displayUpdateHint(this);
     const flags = (await this.parse(DeployUpdate)).flags;
     const userConfiguration = flags.config ?? false;
     const targetTag = flags.target;
@@ -50,19 +48,17 @@ export class DeployUpdate extends Command {
     // Compare Tags
     if (tagComparison === TagComparison.FirstIsNewer) {
       // Current tag is more recent => Redeploy, Wipe Data
-      CliUx.ux.log(
+      this.log(
         `You are about to downgrade your deployment from '${currentConduitTag}' to '${this.targetConduitTag}' 🤔`,
       );
-      CliUx.ux.log('Continuing will replace existing deployment, wiping your data 🗑️');
+      this.log('Continuing will replace existing deployment, wiping your data 🗑️');
       this.wipeData = true;
     } else if (tagComparison === TagComparison.SecondIsNewer) {
       // Current tag is older => Update, Persist Data
-      CliUx.ux.log('Continuing will update existing deployment, preserving your data ✅');
+      this.log('Continuing will update existing deployment, preserving your data ✅');
     } else if (tagComparison === TagComparison.Equal) {
       // Same tag => Redeploy, Persist Data
-      CliUx.ux.log(
-        'Continuing will replace existing deployment, preserving your data ✅',
-      );
+      this.log('Continuing will replace existing deployment, preserving your data ✅');
     }
     const accept = await booleanPrompt(
       'Continue?',
@@ -96,14 +92,14 @@ export class DeployUpdate extends Command {
     const uiUpdate =
       compareTags(currentUiTag, targetUiTag) === TagComparison.SecondIsNewer;
     if (!conduitUpdate && !uiUpdate) {
-      CliUx.ux.log('No Conduit updates available... 👍');
-      CliUx.ux.exit(0);
+      this.log('No Conduit updates available... 👍');
+      ux.exit(0);
     }
     if (conduitUpdate) {
-      CliUx.ux.log(`Conduit Update:\t${currentConduitTag} -> ${this.targetConduitTag}`);
+      this.log(`Conduit Update:\t${currentConduitTag} -> ${this.targetConduitTag}`);
     }
     if (uiUpdate) {
-      CliUx.ux.log(`Conduit-UI Update:\t${currentUiTag} -> ${targetUiTag}`);
+      this.log(`Conduit-UI Update:\t${currentUiTag} -> ${targetUiTag}`);
     }
     return conduitTagComparison;
   }

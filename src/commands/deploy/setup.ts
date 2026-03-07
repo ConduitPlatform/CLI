@@ -1,7 +1,6 @@
-import { CliUx, Command, Flags } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 import { DeployStart } from './start';
 import { DeployUpdate } from './update';
-import { CliUpdate } from '../cli/update';
 import {
   abortAsFriends,
   assertValidConduitTag,
@@ -33,7 +32,6 @@ export class DeploySetup extends Command {
   private conduitTags!: string[];
 
   async run() {
-    await CliUpdate.displayUpdateHint(this);
     const flags = (await this.parse(DeployUpdate)).flags;
     this.userConfiguration = flags.config ?? false;
     this.targetTag = flags.target;
@@ -63,12 +61,12 @@ export class DeploySetup extends Command {
   }
 
   private async handleExistingDeployment(activeTag: string) {
-    CliUx.ux.log(`You already have a deployed Conduit (${activeTag}) environment.`);
+    this.log(`You already have a deployed Conduit (${activeTag}) environment.`);
     const latestStable = await selectConduitTag(this.conduitTags, false);
     const tagComparison = compareTags(activeTag, latestStable);
     if (tagComparison === TagComparison.SecondIsNewer) {
       // Update Available
-      CliUx.ux.log(
+      this.log(
         'Our dedicated team of highly trained marsupials ' +
           `has detected an available update (${latestStable}).`,
       );
@@ -95,16 +93,12 @@ export class DeploySetup extends Command {
   }
 
   private async displayDefaultCredentials() {
-    CliUx.ux.log(
+    this.log(
       `\n\n 🤫 ${chalk
         .bgRgb(153, 102, 255)
         .bold.underline('   Default Credentials   ')} 🔑`,
     );
-    CliUx.ux.log(
-      `${chalk.greenBright('       Username:  ')}${chalk.magentaBright('admin')}`,
-    );
-    CliUx.ux.log(
-      `${chalk.greenBright('       Password:  ')}${chalk.magentaBright('admin')}`,
-    );
+    this.log(`${chalk.greenBright('       Username:  ')}${chalk.magentaBright('admin')}`);
+    this.log(`${chalk.greenBright('       Password:  ')}${chalk.magentaBright('admin')}`);
   }
 }

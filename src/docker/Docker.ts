@@ -1,98 +1,71 @@
 import Dockerode = require('dockerode');
 import { execSync } from 'child_process';
-import { CliUx } from '@oclif/core';
-import { DockerCompose } from './dockerCompose';
+import { ux } from '@oclif/core';
+import { ComposeManager } from './compose';
 
 export class Docker {
-  private static _instance?: Docker;
+  private static _instance: Docker | undefined;
   private readonly docker: Dockerode;
-  readonly compose: DockerCompose;
+  readonly compose: ComposeManager;
 
   private constructor() {
     this.assertAvailable();
     this.docker = new Dockerode({
       socketPath: process.env.DOCKER_SOCKET ?? '/var/run/docker.sock',
     });
-    this.compose = new DockerCompose();
+    this.compose = new ComposeManager();
   }
 
-  static getInstance() {
+  static getInstance(): Docker {
     if (Docker._instance) return Docker._instance;
     Docker._instance = new Docker();
     return Docker._instance;
   }
 
-  async containerIsUp(name: string) {
-    return (await this.docker.listContainers({ all: false })).some(container => {
-      return container.Names.includes(`/${name}`);
-    });
+  async containerIsUp(name: string): Promise<boolean> {
+    const containers = await this.docker.listContainers({ all: false });
+    return containers.some(c => c.Names.some(n => n.endsWith(`/${name}`)));
   }
 
-  async listVolumes(nameSelect: string) {
-    return this.docker
-      .listVolumes({ filters: { name: [nameSelect] } })
-      .then(v => v.Volumes.map(info => info.Name));
+  async listVolumes(nameFilter: string): Promise<string[]> {
+    const result = await this.docker.listVolumes({ filters: { name: [nameFilter] } });
+    return (result.Volumes ?? []).map(v => v.Name);
   }
 
-  async removeVolume(name: string) {
+  async removeVolume(name: string): Promise<void> {
     const volume = this.docker.getVolume(name);
-    return volume
-      .remove()
-      .then(_ => true)
-      .catch(_ => false);
+    await volume.remove();
   }
 
-  private assertAvailable() {
-    let dockerInstalled = false;
+  private assertAvailable(): void {
     try {
-      const detectedExec =
-        process.platform === 'win32'
-          ? execSync('where docker').toString().split('\n')[0] // windows
-          : execSync('which docker').toString().trim(); // linux/mac
-      dockerInstalled = !detectedExec.endsWith('not found');
-    } catch {}
-    if (!dockerInstalled) {
-      CliUx.ux.error('Could not detect Docker executable. Is Docker installed?');
+      if (process.platform === 'win32') {
+        execSync('where docker', { stdio: 'pipe' });
+      } else {
+        execSync('which docker', { stdio: 'pipe' });
+      }
+    } catch {
+      ux.error('Could not detect Docker executable. Is Docker installed?');
       process.exit(-1);
     }
-    const dockerRunning = () => {
-      try {
-        execSync('docker stats --no-stream', { stdio: 'pipe' });
-        return true;
-      } catch {
-        return false;
-      }
-    };
-    if (!dockerRunning()) {
-      switch (process.platform) {
-        case 'darwin':
-          CliUx.ux.log('Starting Docker daemon...');
-          try {
-            execSync('open /Applications/Docker.app');
-          } catch {}
-          break;
-        case 'linux':
-        case 'win32':
-          // TODO
-          break;
-      }
-      let retries = 20; // 20s
-      while (!dockerRunning() && retries > 0) {
-        waitSync(1000);
-        retries -= 1;
-      }
-    }
-    if (!dockerRunning()) {
-      CliUx.ux.error('Could not start Docker. Please start Docker daemon and retry.');
+    try {
+      execSync('docker stats --no-stream', { stdio: 'pipe' });
+    } catch {
+      ux.error('Docker daemon is not running. Please start Docker and retry.');
       process.exit(-1);
     }
-  }
-}
-
-function waitSync(ms: number) {
-  const start = Date.now();
-  let now = start;
-  while (now - start < ms) {
-    now = Date.now();
+    try {
+      const out = execSync('docker compose version', {
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
+      if (!out.includes('Docker Compose') && !out.includes('compose')) {
+        ux.error('Docker Compose v2 is required. Run: docker compose version');
+        process.exit(-1);
+      }
+    } catch {
+      ux.error('Docker Compose v2 is required. Is Docker Compose installed?');
+      process.exit(-1);
+    }
   }
 }

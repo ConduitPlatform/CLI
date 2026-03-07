@@ -1,20 +1,17 @@
-import { Command, CliUx } from '@oclif/core';
+import { Command, ux } from '@oclif/core';
 import { Docker } from '../../docker';
-import { CliUpdate } from '../cli/update';
+import { waitForHealthy } from '../../docker/health';
 import { DeploymentConfiguration } from '../../deploy/types';
 import { getTargetDeploymentPaths } from '../../deploy/utils';
-import { sleep } from '../../utils/sleep';
 import * as fs from 'fs-extra';
 import * as dotenv from 'dotenv';
-import * as open from 'open';
-import axios from 'axios';
 import chalk = require('chalk');
+import { failPrecondition } from '../../utils/commandErrors';
 
 export class DeployStart extends Command {
   static description = 'Bring up your local Conduit deployment';
 
   async run() {
-    await CliUpdate.displayUpdateHint(this);
     Docker.getInstance(); // init or fail early
     await DeployStart.startDeployment(this);
   }
@@ -39,44 +36,41 @@ export class DeployStart extends Command {
     const processEnv = JSON.parse(JSON.stringify(process.env));
     process.env = {};
     dotenv.config({ path: envPath });
-    const composeOptions = deploymentConfig.modules.map(m => ['--profile', m]);
     const env = {
       ...JSON.parse(JSON.stringify(process.env)),
       ...deploymentConfig.environment,
     };
     process.env = processEnv;
-    // Run Docker Compose
-    await docker.compose
-      .upAll({
-        cwd,
-        env,
-        log: true,
-        composeOptions,
-      })
-      .catch(err => {
-        CliUx.ux.error(err.message);
-        CliUx.ux.exit(-1);
-      });
-    // Launch Conduit UI
-    await DeployStart.bringUpUi();
+    const result = await docker.compose.up({
+      cwd,
+      env,
+      profiles: deploymentConfig.modules,
+      log: true,
+    });
+    if (result.exitCode !== 0) {
+      command.error(result.stderr || 'docker compose up failed', { exit: 1 });
+    }
+    await DeployStart.bringUpUi(command);
   }
 
-  static async bringUpUi() {
-    CliUx.ux.log(`\n 💻 ${chalk.bgBlueBright.bold('   Launching Dashboard   ')} 💻`);
-    let uiServing = false;
-    let warnedOnce = false;
-    while (!uiServing) {
-      await axios
-        .get('http://localhost:8080')
-        .then(() => (uiServing = true))
-        .catch(() => {
-          if (!warnedOnce) {
-            CliUx.ux.log(chalk.italic('    This may take a while...'));
-            warnedOnce = true;
-          }
-          sleep(1000);
-        });
+  static async bringUpUi(command: Command) {
+    const openPkg = await import('open');
+    const openFn =
+      (openPkg as { default?: (url: string) => Promise<unknown> }).default ?? openPkg;
+    ux.stdout(`\n 💻 ${chalk.bgBlueBright.bold('   Launching Dashboard   ')} 💻\n`);
+    ux.stdout(chalk.italic('    Waiting for UI to be ready...\n'));
+    const healthy = await waitForHealthy({
+      url: 'http://localhost:8080',
+      timeoutMs: 120_000,
+      intervalMs: 2_000,
+    });
+    if (!healthy) {
+      failPrecondition(
+        command,
+        'UI did not become ready in time.',
+        'Check `docker compose logs` and retry.',
+      );
     }
-    await open('http://localhost:8080');
+    await (openFn as (url: string) => Promise<unknown>)('http://localhost:8080');
   }
 }

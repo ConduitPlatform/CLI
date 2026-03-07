@@ -6,3 +6,4 @@
 /.vscode
 /oclif.manifest.json
 /tmp
+/coverage

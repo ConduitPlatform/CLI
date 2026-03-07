@@ -1,6 +1,5 @@
-import { Command, CliUx } from '@oclif/core';
+import { Command } from '@oclif/core';
 import { Docker } from '../../docker';
-import { CliUpdate } from '../cli/update';
 import { getTargetDeploymentPaths } from '../../deploy/utils';
 import { DeploymentConfiguration } from '../../deploy/types';
 import * as dotenv from 'dotenv';
@@ -13,7 +12,6 @@ export class DeployStop extends Command {
   private deploymentConfig!: DeploymentConfiguration;
 
   async run() {
-    await CliUpdate.displayUpdateHint(this);
     this.docker = Docker.getInstance(); // init or fail early
     // Retrieve Compose Files
     const {
@@ -26,23 +24,19 @@ export class DeployStop extends Command {
     dotenv.config({ path: envPath });
     // Retrieve User Configuration
     this.deploymentConfig = await fs.readJSONSync(deploymentConfigPath);
-    const composeOptions = this.deploymentConfig.modules.map(m => ['--profile', m]);
     const env = {
       ...JSON.parse(JSON.stringify(process.env)),
       ...this.deploymentConfig.environment,
     };
     process.env = processEnv;
-    // Run Docker Compose
-    await this.docker.compose
-      .stop({
-        cwd,
-        env,
-        log: true,
-        composeOptions,
-      })
-      .catch(err => {
-        CliUx.ux.error(err.message);
-        CliUx.ux.exit(-1);
-      });
+    const result = await this.docker.compose.stop({
+      cwd,
+      env,
+      profiles: this.deploymentConfig.modules,
+      log: true,
+    });
+    if (result.exitCode !== 0) {
+      this.error(result.stderr || 'docker compose stop failed', { exit: 1 });
+    }
   }
 }

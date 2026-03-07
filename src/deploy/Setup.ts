@@ -6,11 +6,10 @@ import {
   setActiveDeploymentTag,
   getMatchingUiTag,
 } from './utils';
-import { CliUx, Command } from '@oclif/core';
-import axios from 'axios';
+import { Command, ux } from '@oclif/core';
+import { pullComposeFiles, getProfilesFromCompose } from '../docker/files';
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import * as yaml from 'js-yaml';
 
 export class Setup {
   private readonly manifestBasePath: string;
@@ -35,34 +34,24 @@ export class Setup {
   }
 
   async setupEnvironment() {
-    // Pull Compose Files
-    await this.pullComposeFiles();
-    // Select Modules
+    const manifestDir = path.join(this.manifestBasePath, this.selectedTag);
+    try {
+      await pullComposeFiles(this.selectedTag, manifestDir);
+    } catch (e) {
+      ux.error(`Failed to download compose files: ${(e as Error).message}`, { exit: -1 });
+    }
     if (!this.userConfiguration) {
       this._deploymentConfig.modules.push('mongodb');
     } else {
       await this.indexSupportedModules();
       await this.selectModules();
     }
-    // Configure Environment
     await this.configureEnvironment();
   }
 
   private async indexSupportedModules() {
-    // TODO: Parse and store dependencies too
-    let modules: string[] = [];
-    const composeFile = yaml.load(
-      fs.readFileSync(
-        path.join(this.manifestBasePath, this.selectedTag, 'compose.yml'),
-        'utf-8',
-      ),
-    ) as { services: { [key: string]: { profiles?: string[] } } };
-    Object.entries(composeFile.services).forEach(([_, serviceDefinition]) => {
-      if (serviceDefinition.profiles) {
-        modules = modules.concat(serviceDefinition.profiles);
-      }
-    });
-    this.supportedModules = modules;
+    const composePath = path.join(this.manifestBasePath, this.selectedTag, 'compose.yml');
+    this.supportedModules = getProfilesFromCompose(composePath);
   }
 
   private async selectModules() {
@@ -101,33 +90,7 @@ export class Setup {
   async storeDeploymentConfig() {
     const deployConfigPath = path.join(this.deployConfigBasePath, this.selectedTag);
     await fs.ensureDir(this.deployConfigBasePath);
-    await fs.ensureFile(deployConfigPath);
-    fs.writeJsonSync(deployConfigPath, this._deploymentConfig);
+    await fs.writeJson(deployConfigPath, this._deploymentConfig);
     setActiveDeploymentTag(this.command, this.selectedTag);
-  }
-
-  private async pullComposeFiles() {
-    await this.pullFile('docker/docker-compose.yml', 'compose', 'compose.yml');
-    await this.pullFile('docker/.env', 'env', 'env');
-    await this.pullFile(
-      'docker/prometheus.cfg.yml',
-      'prometheus configuration',
-      'prometheus.cfg.yml',
-    );
-    await this.pullFile('docker/loki.cfg.yml', 'loki configuration', 'loki.cfg.yml');
-  }
-
-  private async pullFile(gitPath: string, humanName: string, dstFileName: string) {
-    const cacheDir = path.join(this.manifestBasePath, this.selectedTag);
-    await fs.ensureDir(cacheDir);
-    const url = `https://raw.githubusercontent.com/ConduitPlatform/Conduit/${this.selectedTag}/${gitPath}`;
-    await axios
-      .get(url, { responseType: 'stream' })
-      .then(async response => {
-        const filePath = path.join(cacheDir, dstFileName);
-        await fs.ensureFile(filePath);
-        response.data.pipe(fs.createWriteStream(filePath));
-      })
-      .catch(() => CliUx.ux.error(`Failed to download ${humanName} file`, { exit: -1 }));
   }
 }
